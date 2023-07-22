@@ -7,5 +7,25 @@ module.exports = {
     theme: {
         extend: {}
     },
-    plugins: [require("daisyui")]
+    plugins: [require("daisyui")],
+    daisyui: {
+        themes: [
+            "light",
+            "dark",
+            "retro",
+            {
+                chisaki: {
+                    "primary": "#1d4ed8",
+                    "secondary": "#F000B8",
+                    "accent": "#37CDBE",
+                    "neutral": "#3D4451",
+                    "base-100": "#f8e8ec",
+                    "info": "#3ABFF8",
+                    "success": "#36D399",
+                    "warning": "#FBBD23",
+                    "error": "#dc2626"
+                }
+            }
+        ]
+    }
 };

@@ -1,6 +1,8 @@
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
+    use std::net::SocketAddr;
+
     use axum::{routing::post, Router};
     use leptos::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
@@ -16,7 +18,7 @@ async fn main() {
     // The file would need to be included with the executable when moved to deployment
     let conf = get_configuration(None).await.unwrap();
     let leptos_options = conf.leptos_options;
-    let addr = leptos_options.site_addr;
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
 
     // build our application with a route

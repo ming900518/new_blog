@@ -21,6 +21,7 @@ tokio = { version = "*", optional = true }
 tower = { version = "*", optional = true }
 tower-http = { version = "*", features = ["fs"], optional = true }
 wasm-bindgen = "*"
+web-sys = { version = "*", features = ["Storage"] }
 thiserror = "*"
 tracing = { version = "*", optional = true }
 http = "*"
