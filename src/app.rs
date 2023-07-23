@@ -31,19 +31,19 @@ pub fn App(cx: Scope) -> impl IntoView {
 
         if prefers_color_scheme.matches() {
             current_prefers_dark_scheme.set(true);
-            current_theme.set(dark_theme.get());
+            current_theme.set(dark_theme.get_untracked());
         } else {
             current_prefers_dark_scheme.set(false);
-            current_theme.set(light_theme.get());
+            current_theme.set(light_theme.get_untracked());
         }
 
         let closure: Closure<dyn FnMut(_)> = Closure::new(move |e: MediaQueryList| {
             if e.matches() {
                 current_prefers_dark_scheme.set(true);
-                current_theme.set(dark_theme.get());
+                current_theme.set(dark_theme.get_untracked());
             } else {
                 current_prefers_dark_scheme.set(false);
-                current_theme.set(light_theme.get());
+                current_theme.set(light_theme.get_untracked());
             }
         });
 
