@@ -1,45 +1,77 @@
-use crate::error_template::{AppError, ErrorTemplate};
+use crate::{
+    component::{drawer::Drawer, navbar::Navbar},
+    error_template::{AppError, ErrorTemplate},
+};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
-use wasm_bindgen::JsCast;
-use web_sys::HtmlSelectElement;
+use wasm_bindgen::{prelude::*, JsCast};
+use web_sys::MediaQueryList;
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
-    let theme = create_rw_signal(cx, String::new());
+    let current_prefers_dark_scheme = create_rw_signal(cx, false);
+    let current_theme = create_rw_signal(cx, String::new());
+    let light_theme = create_rw_signal(cx, String::new());
+    let dark_theme = create_rw_signal(cx, String::new());
+
     create_effect(cx, move |_| {
-        let chose_theme = window()
-            .local_storage()
+        let prefers_color_scheme = window()
+            .match_media("(prefers-color-scheme:dark)")
             .ok()
             .flatten()
-            .unwrap()
-            .get_item("theme")
-            .ok()
-            .flatten()
-            .unwrap_or_else(|| String::from("chisaki"));
-        theme.set(chose_theme);
+            .unwrap();
+        let local_stroage = window().local_storage().ok().flatten().unwrap();
+        let chosen_light_theme = local_stroage.get_item("theme.light").ok().flatten();
+        let chosen_dark_theme = local_stroage.get_item("theme.dark").ok().flatten();
+
+        light_theme.set(chosen_light_theme.unwrap_or_else(|| String::from("chisaki")));
+        dark_theme.set(chosen_dark_theme.unwrap_or_else(|| String::from("coffee")));
+
+        if prefers_color_scheme.matches() {
+            current_prefers_dark_scheme.set(true);
+            current_theme.set(dark_theme.get());
+        } else {
+            current_prefers_dark_scheme.set(false);
+            current_theme.set(light_theme.get());
+        }
+
+        let closure: Closure<dyn FnMut(_)> = Closure::new(move |e: MediaQueryList| {
+            if e.matches() {
+                current_prefers_dark_scheme.set(true);
+                current_theme.set(dark_theme.get());
+            } else {
+                current_prefers_dark_scheme.set(false);
+                current_theme.set(light_theme.get());
+            }
+        });
+
+        prefers_color_scheme.set_onchange(Some(closure.as_ref().unchecked_ref()));
+        closure.forget();
     });
 
     view! {
         cx,
-        <Suspense fallback=move || view! { cx, <Html lang="zh-Hant" attributes=AdditionalAttributes::from(vec![("data-theme", "chisaki")]) /> }>
+        <Suspense fallback=move || view! { cx, <Html lang="zh-Hant" /> }>
             {
-                move || view! { cx,  <Html lang="zh-Hant" attributes=AdditionalAttributes::from(vec![("data-theme", theme.get())]) /> }.into_view(cx)
+                move || view! { cx,  <Html lang="zh-Hant" attributes=AdditionalAttributes::from(vec![("data-theme", current_theme.get())]) /> }.into_view(cx)
             }
         </Suspense>
-        <Title text="Blog"/>
+        <Title text="Ming Chang"/>
         <Stylesheet id="leptos" href="/pkg/new_blog.css" />
         <Router fallback=fallback>
-            <main>
-                <div class="flex flex-col">
+            <main class="bg-scroll bg-cover bg-center" style="background-image: url(/bg.webp)">
+                <div class="flex flex-col bg-gradient-to-b from-transparent to-black">
                     <Navbar />
                     <div class="flex flex-row">
-                        <Drawer theme />
-                        <Routes>
-                            <Route path="" view=|cx| view! { cx, <></> }/>
-                        </Routes>
+                        <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme />
+                        <div class="h-[calc(100vh-4rem)]">
+                            <Routes>
+                                <Route path="/blog/:id" view= |cx| view! { cx, <>"blog article"</> }/>
+                                <Route path="" view= |cx| view! { cx, <>"home"</> }/>
+                            </Routes>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -54,50 +86,4 @@ fn fallback(cx: Scope) -> View {
         <ErrorTemplate outside_errors/>
     }
     .into_view(cx)
-}
-
-#[component]
-fn Navbar(cx: Scope) -> impl IntoView {
-    view! { cx,
-        <div class="navbar bg-base-300">
-            <div class="flex-none">
-                <label for="drawer" class="btn btn-square btn-ghost lg:hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </label>
-            </div>
-            <p class="normal-case text-xl font-bold lg:ml-5">"Ming Chang"</p>
-        </div>
-    }
-}
-
-#[component]
-fn Drawer(cx: Scope, theme: RwSignal<String>) -> impl IntoView {
-    view! { cx,
-        <div class="drawer lg:drawer-open">
-            <input id="drawer" type="checkbox" class="drawer-toggle" />
-            <div class="drawer-side h-screen lg:h-[calc(100vh-4rem)]">
-                <label for="drawer" class="drawer-overlay" />
-                <ul class="menu p-4 w-64 h-full bg-base-200 text-base-content grow">
-                    <select
-                        class="select select-bordered"
-                        on:change=move |e| {
-                            let select = e.target().unwrap().dyn_into::<HtmlSelectElement>().unwrap().value();
-                            window().local_storage().ok().flatten().unwrap().set_item("theme", &select).unwrap();
-                            theme.set(select);
-                        }
-                    >
-                        <option disabled>"選擇主題"</option>
-                        <option value="chisaki" label="ちさき (預設)" selected=move || theme.get() == "chisaki" />
-                        <option value="light" label="Light" selected=move || theme.get() == "light" />
-                        <option value="dark" label="Dark" selected=move || theme.get() == "dark" />
-                        <option value="retro" label="Retro" selected=move || theme.get() == "retro" />
-                    </select>
-                    <div class="divider"/>
-                    <li><a>"Home"</a></li>
-                </ul>
-          </div>
-      </div>
-    }
 }

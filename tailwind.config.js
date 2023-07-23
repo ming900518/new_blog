@@ -10,9 +10,6 @@ module.exports = {
     plugins: [require("daisyui")],
     daisyui: {
         themes: [
-            "light",
-            "dark",
-            "retro",
             {
                 chisaki: {
                     "primary": "#1d4ed8",
@@ -25,7 +22,12 @@ module.exports = {
                     "warning": "#FBBD23",
                     "error": "#dc2626"
                 }
-            }
+            },
+            "dark",
+            "dracula",
+            "coffee",
+            "light",
+            "retro"
         ]
     }
 };

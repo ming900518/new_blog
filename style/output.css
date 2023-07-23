@@ -445,19 +445,22 @@ html {
 }
 
 :root {
-  color-scheme: light;
-  --pf: 259 94% 44%;
+  --p: 224 76% 48%;
+  --pf: 224 76% 41%;
   --sf: 314 100% 40%;
-  --af: 174 75% 39%;
-  --nf: 214 20% 14%;
-  --in: 198 93% 60%;
-  --su: 158 64% 52%;
-  --wa: 43 96% 56%;
-  --er: 0 91% 71%;
-  --inc: 198 100% 12%;
-  --suc: 158 100% 10%;
-  --wac: 43 100% 11%;
-  --erc: 0 100% 14%;
+  --af: 174 60% 44%;
+  --nf: 219 14% 21%;
+  --b2: 345 53% 87%;
+  --b3: 345 53% 80%;
+  --bc: 345 3% 18%;
+  --pc: 245 71% 91%;
+  --sc: 323 100% 93%;
+  --ac: 172 29% 12%;
+  --nc: 221 6% 84%;
+  --inc: 202 34% 14%;
+  --suc: 152 31% 13%;
+  --wac: 39 47% 13%;
+  --erc: 11 100% 91%;
   --rounded-box: 1rem;
   --rounded-btn: 0.5rem;
   --rounded-badge: 1.9rem;
@@ -468,18 +471,14 @@ html {
   --border-btn: 1px;
   --tab-border: 1px;
   --tab-radius: 0.5rem;
-  --p: 259 94% 51%;
-  --pc: 259 96% 91%;
   --s: 314 100% 47%;
-  --sc: 314 100% 91%;
-  --a: 174 75% 46%;
-  --ac: 174 75% 11%;
-  --n: 214 20% 21%;
-  --nc: 212 19% 87%;
-  --b1: 0 0% 100%;
-  --b2: 0 0% 95%;
-  --b3: 180 2% 90%;
-  --bc: 215 28% 17%;
+  --a: 174 60% 51%;
+  --n: 219 14% 28%;
+  --b1: 345 53% 94%;
+  --in: 198 93% 60%;
+  --su: 158 64% 52%;
+  --wa: 43 96% 56%;
+  --er: 0 72% 51%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -522,20 +521,23 @@ html {
   }
 }
 
-[data-theme=light] {
-  color-scheme: light;
-  --pf: 259 94% 44%;
+[data-theme=chisaki] {
+  --p: 224 76% 48%;
+  --pf: 224 76% 41%;
   --sf: 314 100% 40%;
-  --af: 174 75% 39%;
-  --nf: 214 20% 14%;
-  --in: 198 93% 60%;
-  --su: 158 64% 52%;
-  --wa: 43 96% 56%;
-  --er: 0 91% 71%;
-  --inc: 198 100% 12%;
-  --suc: 158 100% 10%;
-  --wac: 43 100% 11%;
-  --erc: 0 100% 14%;
+  --af: 174 60% 44%;
+  --nf: 219 14% 21%;
+  --b2: 345 53% 87%;
+  --b3: 345 53% 80%;
+  --bc: 345 3% 18%;
+  --pc: 245 71% 91%;
+  --sc: 323 100% 93%;
+  --ac: 172 29% 12%;
+  --nc: 221 6% 84%;
+  --inc: 202 34% 14%;
+  --suc: 152 31% 13%;
+  --wac: 39 47% 13%;
+  --erc: 11 100% 91%;
   --rounded-box: 1rem;
   --rounded-btn: 0.5rem;
   --rounded-badge: 1.9rem;
@@ -546,18 +548,14 @@ html {
   --border-btn: 1px;
   --tab-border: 1px;
   --tab-radius: 0.5rem;
-  --p: 259 94% 51%;
-  --pc: 259 96% 91%;
   --s: 314 100% 47%;
-  --sc: 314 100% 91%;
-  --a: 174 75% 46%;
-  --ac: 174 75% 11%;
-  --n: 214 20% 21%;
-  --nc: 212 19% 87%;
-  --b1: 0 0% 100%;
-  --b2: 0 0% 95%;
-  --b3: 180 2% 90%;
-  --bc: 215 28% 17%;
+  --a: 174 60% 51%;
+  --n: 219 14% 28%;
+  --b1: 345 53% 94%;
+  --in: 198 93% 60%;
+  --su: 158 64% 52%;
+  --wa: 43 96% 56%;
+  --er: 0 72% 51%;
 }
 
 [data-theme=dark] {
@@ -598,6 +596,120 @@ html {
   --bc: 220 13% 69%;
 }
 
+[data-theme=dracula] {
+  color-scheme: dark;
+  --pf: 326 100% 67%;
+  --sf: 265 89% 71%;
+  --af: 31 100% 64%;
+  --nf: 230 15% 23%;
+  --b2: 231 15% 11%;
+  --b3: 231 15% 4%;
+  --pc: 328 26% 15%;
+  --sc: 266 19% 16%;
+  --ac: 30 30% 15%;
+  --nc: 232 7% 85%;
+  --inc: 191 20% 16%;
+  --suc: 128 30% 14%;
+  --wac: 64 20% 15%;
+  --erc: 5 39% 14%;
+  --rounded-box: 1rem;
+  --rounded-btn: 0.5rem;
+  --rounded-badge: 1.9rem;
+  --animation-btn: 0.25s;
+  --animation-input: .2s;
+  --btn-text-case: uppercase;
+  --btn-focus-scale: 0.95;
+  --border-btn: 1px;
+  --tab-border: 1px;
+  --tab-radius: 0.5rem;
+  --p: 326 100% 74%;
+  --s: 265 89% 78%;
+  --a: 31 100% 71%;
+  --n: 230 15% 30%;
+  --b1: 231 15% 18%;
+  --bc: 60 30% 96%;
+  --in: 191 97% 77%;
+  --su: 135 94% 65%;
+  --wa: 65 92% 76%;
+  --er: 0 100% 67%;
+}
+
+[data-theme=coffee] {
+  color-scheme: dark;
+  --pf: 30 67% 51%;
+  --sf: 182 25% 13%;
+  --af: 194 74% 18%;
+  --nf: 0 0% 0%;
+  --b2: 306 19% 4%;
+  --b3: 0 0% 0%;
+  --pc: 28 35% 13%;
+  --sc: 182 6% 83%;
+  --ac: 199 20% 85%;
+  --nc: 300 1% 79%;
+  --inc: 170 12% 14%;
+  --suc: 92 11% 13%;
+  --wac: 41 33% 14%;
+  --erc: 11 25% 15%;
+  --rounded-box: 1rem;
+  --rounded-btn: 0.5rem;
+  --rounded-badge: 1.9rem;
+  --animation-btn: 0.25s;
+  --animation-input: .2s;
+  --btn-text-case: uppercase;
+  --btn-focus-scale: 0.95;
+  --border-btn: 1px;
+  --tab-border: 1px;
+  --tab-radius: 0.5rem;
+  --p: 30 67% 58%;
+  --s: 182 25% 20%;
+  --a: 194 74% 25%;
+  --n: 300 20% 6%;
+  --b1: 306 19% 11%;
+  --bc: 37 8% 42%;
+  --in: 171 37% 67%;
+  --su: 93 25% 62%;
+  --wa: 43 100% 69%;
+  --er: 10 95% 75%;
+}
+
+[data-theme=light] {
+  color-scheme: light;
+  --pf: 259 94% 44%;
+  --sf: 314 100% 40%;
+  --af: 174 75% 39%;
+  --nf: 214 20% 14%;
+  --in: 198 93% 60%;
+  --su: 158 64% 52%;
+  --wa: 43 96% 56%;
+  --er: 0 91% 71%;
+  --inc: 198 100% 12%;
+  --suc: 158 100% 10%;
+  --wac: 43 100% 11%;
+  --erc: 0 100% 14%;
+  --rounded-box: 1rem;
+  --rounded-btn: 0.5rem;
+  --rounded-badge: 1.9rem;
+  --animation-btn: 0.25s;
+  --animation-input: .2s;
+  --btn-text-case: uppercase;
+  --btn-focus-scale: 0.95;
+  --border-btn: 1px;
+  --tab-border: 1px;
+  --tab-radius: 0.5rem;
+  --p: 259 94% 51%;
+  --pc: 259 96% 91%;
+  --s: 314 100% 47%;
+  --sc: 314 100% 91%;
+  --a: 174 75% 46%;
+  --ac: 174 75% 11%;
+  --n: 214 20% 21%;
+  --nc: 212 19% 87%;
+  --b1: 0 0% 100%;
+  --b2: 0 0% 95%;
+  --b3: 180 2% 90%;
+  --bc: 215 28% 17%;
+}
+
 [data-theme=retro] {
   color-scheme: light;
   --pf: 3 74% 69%;
@@ -634,43 +746,6 @@ html {
   --rounded-box: 0.4rem;
   --rounded-btn: 0.4rem;
   --rounded-badge: 0.4rem;
-}
-
-[data-theme=chisaki] {
-  --p: 224 76% 48%;
-  --pf: 224 76% 41%;
-  --sf: 314 100% 40%;
-  --af: 174 60% 44%;
-  --nf: 219 14% 21%;
-  --b2: 345 53% 87%;
-  --b3: 345 53% 80%;
-  --bc: 345 3% 18%;
-  --pc: 245 71% 91%;
-  --sc: 323 100% 93%;
-  --ac: 172 29% 12%;
-  --nc: 221 6% 84%;
-  --inc: 202 34% 14%;
-  --suc: 152 31% 13%;
-  --wac: 39 47% 13%;
-  --erc: 11 100% 91%;
-  --rounded-box: 1rem;
-  --rounded-btn: 0.5rem;
-  --rounded-badge: 1.9rem;
-  --animation-btn: 0.25s;
-  --animation-input: .2s;
-  --btn-text-case: uppercase;
-  --btn-focus-scale: 0.95;
-  --border-btn: 1px;
-  --tab-border: 1px;
-  --tab-radius: 0.5rem;
-  --s: 314 100% 47%;
-  --a: 174 60% 51%;
-  --n: 219 14% 28%;
-  --b1: 345 53% 94%;
-  --in: 198 93% 60%;
-  --su: 158 64% 52%;
-  --wa: 43 96% 56%;
-  --er: 0 72% 51%;
 }
 
 *, ::before, ::after {
@@ -1622,6 +1697,16 @@ html {
   outline-color: hsl(var(--bc) / 0.2);
 }
 
+.select-ghost {
+  --tw-bg-opacity: 0.05;
+}
+
+.select-ghost:focus {
+  --tw-bg-opacity: 1;
+  --tw-text-opacity: 1;
+  color: hsl(var(--bc) / var(--tw-text-opacity));
+}
+
 .select-disabled,
   .select:disabled,
   .select[disabled] {
@@ -1797,8 +1882,16 @@ html {
   display: flex;
 }
 
+.h-4 {
+  height: 1rem;
+}
+
 .h-5 {
   height: 1.25rem;
+}
+
+.h-\[calc\(100vh-4rem\)\] {
+  height: calc(100vh - 4rem);
 }
 
 .h-full {
@@ -1807,6 +1900,10 @@ html {
 
 .h-screen {
   height: 100vh;
+}
+
+.w-4 {
+  width: 1rem;
 }
 
 .w-5 {
@@ -1833,14 +1930,43 @@ html {
   flex-direction: column;
 }
 
+.gap-2 {
+  gap: 0.5rem;
+}
+
 .bg-base-200 {
   --tw-bg-opacity: 1;
   background-color: hsl(var(--b2) / var(--tw-bg-opacity));
 }
 
-.bg-base-300 {
-  --tw-bg-opacity: 1;
-  background-color: hsl(var(--b3) / var(--tw-bg-opacity));
+.bg-base-300\/\[\.8\] {
+  background-color: hsl(var(--b3) / .8);
+}
+
+.bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+}
+
+.from-transparent {
+  --tw-gradient-from: transparent var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-black {
+  --tw-gradient-to: #000 var(--tw-gradient-to-position);
+}
+
+.bg-cover {
+  background-size: cover;
+}
+
+.bg-scroll {
+  background-attachment: scroll;
+}
+
+.bg-center {
+  background-position: center;
 }
 
 .stroke-current {
@@ -1849,6 +1975,11 @@ html {
 
 .p-4 {
   padding: 1rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
 }
 
 .text-xl {
@@ -1867,6 +1998,11 @@ html {
 .text-base-content {
   --tw-text-opacity: 1;
   color: hsl(var(--bc) / var(--tw-text-opacity));
+}
+
+.text-black {
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 
 @media (min-width: 1024px) {
@@ -1901,6 +2037,10 @@ html {
     background-color: transparent;
   }
 
+  .lg\:m-3 {
+    margin: 0.75rem;
+  }
+
   .lg\:ml-5 {
     margin-left: 1.25rem;
   }
@@ -1909,7 +2049,15 @@ html {
     display: none;
   }
 
-  .lg\:h-\[calc\(100vh-4rem\)\] {
-    height: calc(100vh - 4rem);
+  .lg\:h-\[calc\(100vh-5\.5rem\)\] {
+    height: calc(100vh - 5.5rem);
+  }
+
+  .lg\:rounded-lg {
+    border-radius: 0.5rem;
+  }
+
+  .lg\:bg-base-200\/\[\.7\] {
+    background-color: hsl(var(--b2) / .7);
   }
 }
