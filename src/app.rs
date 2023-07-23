@@ -67,7 +67,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                     <div class="flex flex-row">
                         <div class="drawer lg:drawer-open">
                             <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme />
-                            <div class="drawer-content flex flex-col items-start justify-start h-[calc(100vh-6.5rem)] m-5 ml-0 overflow-scroll">
+                            <div class="drawer-content flex flex-col items-start justify-start h-[calc(100vh-6.5rem)] lg:m-5 lg:ml-0 overflow-scroll">
                                 <Routes>
                                     <Route path="/blog/:id" view= |cx| view! { cx, <Blog />}/>
                                     <Route path="/about" view= |cx| view! { cx, <About />}/>

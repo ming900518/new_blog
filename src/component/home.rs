@@ -10,7 +10,7 @@ pub fn Home(cx: Scope) -> impl IntoView {
 
     view! { cx,
         <Suspense fallback=move || view! { cx, <></> }>
-            <>
+            <div class="lg:rounded-lg lg:bg-base-200/[.7] p-5 pb-0">
                 {move || {
                     article_list.with(cx, |articles| articles
                         .clone()
@@ -18,9 +18,9 @@ pub fn Home(cx: Scope) -> impl IntoView {
                             articles
                                 .into_iter()
                                 .map(|article| view! { cx, 
-                                    <div class="card bg-base-100 shadow-xl mb-5 w-full">
+                                    <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg">
                                         <div class="card-body">
-                                            <div class="flex flex-row">
+                                            <div class="flex lg:flex-row flex-col gap-2">
                                                 <h1 class="card-title justify-start grow">{article.name}</h1>
                                                 <h2 class="text-sm justify-end">{article.date}</h2>
                                             </div>
@@ -32,7 +32,7 @@ pub fn Home(cx: Scope) -> impl IntoView {
                         })
                     )
                 }}
-            </>
+            </div>
         </Suspense>
     }
 }
