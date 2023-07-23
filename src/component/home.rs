@@ -10,7 +10,7 @@ pub fn Home(cx: Scope) -> impl IntoView {
 
     view! { cx,
         <Suspense fallback=move || view! { cx, <></> }>
-            <div class="lg:rounded-lg lg:bg-base-200/[.7] p-5 pb-0">
+            <div class="lg:rounded-lg lg:bg-base-200/[.7] p-5 pb-0 overflow-scroll">
                 {move || {
                     article_list.with(cx, |articles| articles
                         .clone()
