@@ -25,6 +25,10 @@ web-sys = { version = "*", features = ["Storage", "MediaQueryList"] }
 thiserror = "*"
 tracing = { version = "*", optional = true }
 http = "*"
+reqwest = { version = "*", default-features = false, features = ["json", "native-tls-vendored"] }
+time = { version = "*", features = ["serde", "serde-well-known", "local-offset", "std"] }
+serde = { version = "*", features = ["derive"] }
+serde_json = { version = "*" }
 
 [features]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]

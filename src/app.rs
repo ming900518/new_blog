@@ -1,5 +1,5 @@
 use crate::{
-    component::{drawer::Drawer, navbar::Navbar},
+    component::{about::About, blog::Blog, drawer::Drawer, home::Home, navbar::Navbar},
     error_template::{AppError, ErrorTemplate},
 };
 use leptos::*;
@@ -65,12 +65,15 @@ pub fn App(cx: Scope) -> impl IntoView {
                 <div class="flex flex-col bg-gradient-to-b from-transparent to-black">
                     <Navbar />
                     <div class="flex flex-row">
-                        <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme />
-                        <div class="h-[calc(100vh-4rem)]">
-                            <Routes>
-                                <Route path="/blog/:id" view= |cx| view! { cx, <>"blog article"</> }/>
-                                <Route path="" view= |cx| view! { cx, <>"home"</> }/>
-                            </Routes>
+                        <div class="drawer lg:drawer-open">
+                            <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme />
+                            <div class="drawer-content flex flex-col items-start justify-start h-[calc(100vh-6.5rem)] m-5 ml-0 overflow-scroll">
+                                <Routes>
+                                    <Route path="/blog/:id" view= |cx| view! { cx, <Blog />}/>
+                                    <Route path="/about" view= |cx| view! { cx, <About />}/>
+                                    <Route path="" view= |cx| view! { cx, <Home /> }/>
+                                </Routes>
+                            </div>
                         </div>
                     </div>
                 </div>
