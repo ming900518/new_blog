@@ -2,6 +2,7 @@ use leptos::{
     server_fn::serde::{Deserialize, Serialize},
     *,
 };
+use leptos_router::A;
 use time::{format_description::FormatItem, OffsetDateTime};
 
 #[component]
@@ -10,15 +11,15 @@ pub fn Home(cx: Scope) -> impl IntoView {
 
     view! { cx,
         <Suspense fallback=move || view! { cx, <></> }>
-            <div class="lg:rounded-lg lg:bg-base-200/[.7] p-5 pb-0 overflow-scroll">
-                {move || {
-                    article_list.with(cx, |articles| articles
-                        .clone()
-                        .map(|articles| {
-                            articles
-                                .into_iter()
-                                .map(|article| view! { cx, 
-                                    <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg">
+            {move || {
+                article_list.with(cx, |articles| articles
+                    .clone()
+                    .map(|articles| {
+                        articles
+                            .into_iter()
+                            .map(|article| view! { cx,
+                                <A href={format!("/blog/{}", article.url)}>
+                                    <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
                                         <div class="card-body">
                                             <div class="flex lg:flex-row flex-col gap-2">
                                                 <h1 class="card-title justify-start grow">{article.name}</h1>
@@ -27,12 +28,12 @@ pub fn Home(cx: Scope) -> impl IntoView {
                                             <p>{article.intro}</p>
                                         </div>
                                     </div>
-                                })
-                                .collect_view(cx)
-                        })
-                    )
-                }}
-            </div>
+                                </A>
+                            })
+                            .collect_view(cx)
+                    })
+                )
+            }}
         </Suspense>
     }
 }
@@ -43,7 +44,7 @@ pub struct RawArticleData {
     #[serde(with = "time::serde::iso8601")]
     date: OffsetDateTime,
     url: String,
-    intro: String
+    intro: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -51,19 +52,22 @@ pub struct ArticleData {
     name: String,
     date: String,
     url: String,
-    intro: String
+    intro: String,
 }
 
-const DATE_TIME_FORMAT: &[FormatItem<'_>] = time::macros::format_description!(
-    "[year]/[month]/[day] [hour padding:none repr:12]:[minute padding:none] [period case:upper]"
-);
+const DATE_TIME_FORMAT: &[FormatItem<'_>] =
+    time::macros::format_description!("[year]/[month]/[day]");
 
 impl ArticleData {
     fn from_raw(raw: RawArticleData) -> Self {
-        Self { name: raw.name, date: raw.date.format(&DATE_TIME_FORMAT).unwrap(), url: raw.url, intro: raw.intro }
+        Self {
+            name: raw.name,
+            date: raw.date.format(&DATE_TIME_FORMAT).unwrap(),
+            url: raw.url,
+            intro: raw.intro,
+        }
     }
 }
-
 
 #[server(FetchArticleList, "/api")]
 pub async fn fetch_article_list() -> Result<Vec<ArticleData>, ServerFnError> {
@@ -74,6 +78,9 @@ pub async fn fetch_article_list() -> Result<Vec<ArticleData>, ServerFnError> {
     let mut fetched_data = resp.json::<Vec<RawArticleData>>().await.unwrap();
     fetched_data.sort_by_key(|x| x.date);
     fetched_data.reverse();
-    let processed_data = fetched_data.into_iter().map(ArticleData::from_raw).collect::<Vec<ArticleData>>();
+    let processed_data = fetched_data
+        .into_iter()
+        .map(ArticleData::from_raw)
+        .collect::<Vec<ArticleData>>();
     Ok(processed_data)
 }

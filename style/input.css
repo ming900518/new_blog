@@ -1,3 +1,83 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.article-content #article-content h1 {
+    line-height: 2;
+    padding-bottom: 0.1em;
+    border-bottom: 1px solid #eaecef;
+}
+
+.article-content #article-content h2 {
+    line-height: 2;
+    padding-bottom: 0.1em;
+    border-bottom: 1px solid #eaecef;
+}
+
+.article-content #article-content h3 {
+    line-height: 2;
+    padding-bottom: 0.1em;
+    border-bottom: 1px solid #eaecef;
+}
+
+.article-content #article-content h4 {
+    line-height: 2;
+    padding-bottom: 0.1em;
+    border-bottom: 1px solid #eaecef;
+}
+
+.article-content #article-content h5 {
+    line-height: 2;
+    padding-bottom: 0.1em;
+    border-bottom: 1px solid #eaecef;
+}
+
+.article-content #article-content h6 {
+    line-height: 2;
+    padding-bottom: 0.1em;
+    border-bottom: 1px solid #eaecef;
+}
+
+.article-content #article-content a {
+    color: #0366d6;
+}
+
+.article-content #article-content blockquote {
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+}
+
+.article-content #article-content pre {
+    padding: 0 16px 0 16px;
+    overflow: auto;
+}
+
+.article-content #article-content table {
+    display: block;
+    width: 100%;
+    overflow: auto;
+}
+
+.article-content #article-content table th {
+    font-weight: 600;
+}
+
+.article-content #article-content table th,
+.article-content #article-content table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+.article-content #article-content table tr {
+    background-color: #fff;
+    border-top: 1px solid #c6cbd1;
+}
+
+.article-content #article-content table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
+.article-content #article-content table img {
+    background-color: transparent;
+}

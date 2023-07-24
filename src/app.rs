@@ -68,11 +68,13 @@ pub fn App(cx: Scope) -> impl IntoView {
                         <div class="drawer lg:drawer-open">
                             <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme />
                             <div class="drawer-content flex flex-col items-start justify-start h-[calc(100vh-6.5rem)] lg:m-5 lg:ml-0 overflow-scroll">
-                                <Routes>
-                                    <Route path="/blog/:id" view= |cx| view! { cx, <Blog />}/>
-                                    <Route path="/about" view= |cx| view! { cx, <About />}/>
-                                    <Route path="" view= |cx| view! { cx, <Home /> }/>
-                                </Routes>
+                                <div class="lg:rounded-lg lg:bg-base-200/[.7] p-5 pb-0 overflow-y-scroll overflow-x-clip w-full h-full">
+                                    <Routes>
+                                        <Route path="/blog/:filename" view= |cx| view! { cx, <Blog />} ssr=SsrMode::Async/>
+                                        <Route path="/about" view= |cx| view! { cx, <About />} ssr=SsrMode::Async/>
+                                        <Route path="" view= |cx| view! { cx, <Home /> } ssr=SsrMode::Async/>
+                                    </Routes>
+                                </div>
                             </div>
                         </div>
                     </div>
