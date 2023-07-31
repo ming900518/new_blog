@@ -10,31 +10,33 @@ pub fn Home(cx: Scope) -> impl IntoView {
     let article_list = create_resource(cx, || (), |_| async { fetch_article_list().await });
 
     view! { cx,
-        <Suspense fallback=move || view! { cx, <></> }>
-            {move || {
-                article_list.with(cx, |articles| articles
-                    .clone()
-                    .map(|articles| {
-                        articles
-                            .into_iter()
-                            .map(|article| view! { cx,
-                                <A href={format!("/blog/{}", article.url)}>
-                                    <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
-                                        <div class="card-body">
-                                            <div class="flex lg:flex-row flex-col gap-2">
-                                                <h1 class="card-title justify-start grow">{article.name}</h1>
-                                                <h2 class="text-sm justify-end">{article.date}</h2>
+        <div class="p-5">
+            <Suspense fallback=move || view! { cx, <></> }>
+                {move || {
+                    article_list.with(cx, |articles| articles
+                        .clone()
+                        .map(|articles| {
+                            articles
+                                .into_iter()
+                                .map(|article| view! { cx,
+                                    <A href={format!("/blog/{}", article.url)}>
+                                        <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
+                                            <div class="card-body">
+                                                <div class="flex lg:flex-row flex-col gap-2">
+                                                    <h1 class="card-title justify-start grow">{article.name}</h1>
+                                                    <h2 class="text-sm justify-end">{article.date}</h2>
+                                                </div>
+                                                <p>{article.intro}</p>
                                             </div>
-                                            <p>{article.intro}</p>
                                         </div>
-                                    </div>
-                                </A>
-                            })
-                            .collect_view(cx)
-                    })
-                )
-            }}
-        </Suspense>
+                                    </A>
+                                })
+                                .collect_view(cx)
+                        })
+                    )
+                }}
+            </Suspense>
+        </div>
     }
 }
 

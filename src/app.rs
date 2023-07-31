@@ -5,8 +5,17 @@ use crate::{
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
+use std::cmp::Ordering;
 use wasm_bindgen::{prelude::*, JsCast};
-use web_sys::MediaQueryList;
+use web_sys::{HtmlDivElement, MediaQueryList};
+
+#[derive(Debug, Default, Clone, Copy)]
+pub enum ScrollDirection {
+    Down,
+    Up,
+    #[default]
+    None,
+}
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
@@ -15,13 +24,27 @@ pub fn App(cx: Scope) -> impl IntoView {
     let current_theme = create_rw_signal(cx, String::new());
     let light_theme = create_rw_signal(cx, String::new());
     let dark_theme = create_rw_signal(cx, String::new());
+    let small_screen = create_rw_signal(cx, false);
+    let scrolling = create_rw_signal(cx, ScrollDirection::None);
+    let (last_top, set_last_top) = create_signal(cx, 0);
 
     create_effect(cx, move |_| {
+        if let Ok(width) = window().inner_width() {
+            if width.as_f64().unwrap_or(f64::MAX) > 769.0 {
+                small_screen.set(false);
+            } else {
+                small_screen.set(true);
+            }
+        } else {
+            small_screen.set(false);
+        }
+
         let prefers_color_scheme = window()
             .match_media("(prefers-color-scheme:dark)")
             .ok()
             .flatten()
             .unwrap();
+
         let local_stroage = window().local_storage().ok().flatten().unwrap();
         let chosen_light_theme = local_stroage.get_item("theme.light").ok().flatten();
         let chosen_dark_theme = local_stroage.get_item("theme.dark").ok().flatten();
@@ -37,7 +60,7 @@ pub fn App(cx: Scope) -> impl IntoView {
             current_theme.set(light_theme.get_untracked());
         }
 
-        let closure: Closure<dyn FnMut(_)> = Closure::new(move |e: MediaQueryList| {
+        let colorscheme_closure: Closure<dyn FnMut(_)> = Closure::new(move |e: MediaQueryList| {
             if e.matches() {
                 current_prefers_dark_scheme.set(true);
                 current_theme.set(dark_theme.get_untracked());
@@ -47,8 +70,8 @@ pub fn App(cx: Scope) -> impl IntoView {
             }
         });
 
-        prefers_color_scheme.set_onchange(Some(closure.as_ref().unchecked_ref()));
-        closure.forget();
+        prefers_color_scheme.set_onchange(Some(colorscheme_closure.as_ref().unchecked_ref()));
+        colorscheme_closure.forget();
     });
 
     view! {
@@ -59,16 +82,32 @@ pub fn App(cx: Scope) -> impl IntoView {
             }
         </Suspense>
         <Title text="Ming Chang"/>
+        <Meta name="apple-mobile-web-app-capable" content="yes"/>
+        <Meta name="apple-touch-fullscreen" content="yes"/>
         <Stylesheet id="leptos" href="/pkg/new_blog.css" />
         <Router fallback=fallback>
             <main class="bg-scroll bg-cover bg-center" style="background-image: url(/bg.webp)">
                 <div class="flex flex-col bg-gradient-to-b from-transparent to-black">
-                    <Navbar />
+                    <Navbar scrolling />
                     <div class="flex flex-row">
                         <div class="drawer lg:drawer-open">
                             <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme />
-                            <div class="drawer-content flex flex-col items-start justify-start h-[calc(100vh-6.5rem)] lg:m-5 lg:ml-0 overflow-scroll">
-                                <div class="lg:rounded-lg lg:bg-base-200/[.7] p-5 pb-0 overflow-y-scroll overflow-x-clip w-full h-full">
+                            <div class="drawer-content flex flex-col items-start justify-start h-screen lg:h-[calc(100vh-6.5rem)] lg:m-5 lg:ml-0 overflow-scroll">
+                                <div id="content" class="lg:rounded-lg lg:bg-base-200/[.7] pb-0 overflow-y-scroll overflow-x-clip w-full h-full" on:scroll= move |_| {
+                                    let target = window().document().unwrap().query_selector("#content").ok().flatten().unwrap().dyn_into::<HtmlDivElement>().unwrap();
+                                    let top = target.scroll_top();
+                                    let last_top = last_top.get();
+                                    if small_screen.get() && top > 0 {
+                                        match (top - last_top).cmp(&0) {
+                                            Ordering::Greater => scrolling.set(ScrollDirection::Down),
+                                            Ordering::Less => scrolling.set(ScrollDirection::Up),
+                                            Ordering::Equal => scrolling.set(ScrollDirection::None)
+                                        }
+                                    } else {
+                                        scrolling.set(ScrollDirection::None)
+                                    }
+                                    set_last_top.set(top);
+                                }>
                                     <Routes>
                                         <Route path="/blog/:filename" view= |cx| view! { cx, <Blog />} ssr=SsrMode::Async/>
                                         <Route path="/about" view= |cx| view! { cx, <About />} ssr=SsrMode::Async/>

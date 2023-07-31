@@ -1,15 +1,16 @@
-use http::StatusCode;
-use leptos::{
-    server_fn::serde::{Deserialize, Serialize},
-    *
-};
-use leptos_meta::Title;
-use leptos_router::*;
 use comrak::plugins::syntect::SyntectAdapter;
 use comrak::{
     markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
     ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
 };
+use http::StatusCode;
+use leptos::{
+    server_fn::serde::{Deserialize, Serialize},
+    *,
+};
+use leptos_meta::Title;
+use leptos_router::*;
+
 
 #[derive(Params, PartialEq, Clone)]
 struct BlogParams {
@@ -19,25 +20,24 @@ struct BlogParams {
 #[component]
 pub fn Blog(cx: Scope) -> impl IntoView {
     let param = use_params::<BlogParams>(cx);
-    let article_content = create_blocking_resource(
+    let article_content = create_resource(
         cx,
         move || param.get().unwrap().filename.unwrap(),
         move |filename| async { fetch_article_content(filename).await },
     );
 
     view! { cx,
-        <Suspense fallback=|| ()>
+        <Suspense fallback= move || view!{cx, <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg"><div class="card-body h-screen md:h-[calc(100vh-8.75rem)]" /></div>}>
             {move || article_content.with(cx, |article| {
                 let article = article.clone().unwrap();
                 let title = article.title;
                 let content = article.content;
                 view!{ cx,
                     <Title text={format!("{} - Ming Chang", title)}/>
-                    <div class="card bg-base-100 shadow-xl mb-5 object-fill rounded-lg">
+                    <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
                         <div class="card-body">
-                            <h1 class="card-title justify-start w-full">{title}</h1>
                             <div class="article-content">
-                                <article id="article-content" inner_html={content} />
+                                <article id="article-content" inner_html={content}/>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@ pub async fn fetch_article_content(
             let title = split_data.0[2..].to_string();
 
             let content = markdown_to_html_with_plugins(
-                    split_data.1.join("\n").trim(),
+                    collected_data.join("\n").trim(),
                     &ComrakOptions {
                         extension: ComrakExtensionOptions {
                             strikethrough: true,
