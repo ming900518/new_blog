@@ -86,14 +86,14 @@ pub fn App(cx: Scope) -> impl IntoView {
         <Meta name="apple-touch-fullscreen" content="yes"/>
         <Stylesheet id="leptos" href="/pkg/new_blog.css" />
         <Router fallback=fallback>
-            <main class="bg-scroll bg-cover bg-center" style="background-image: url(/bg.webp)">
+            <main class="bg-scroll bg-cover bg-center h-screen overflow-y-clip" style="background-image: url(/bg.webp)">
                 <div class="flex flex-col bg-gradient-to-b from-transparent to-black">
                     <Navbar scrolling />
-                    <div class="flex flex-row">
+                    <div class="flex flex-row max-h-screen">
                         <div class="drawer lg:drawer-open">
                             <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme />
-                            <div class="drawer-content flex flex-col items-start justify-start h-screen lg:h-[calc(100vh-6.5rem)] lg:m-5 lg:ml-0 overflow-scroll">
-                                <div id="content" class="lg:rounded-lg lg:bg-base-200/[.7] pb-0 overflow-y-scroll overflow-x-clip w-full h-full" on:scroll= move |_| {
+                            <div class="drawer-content flex flex-col items-start justify-start lg:m-5 lg:ml-0 overflow-scroll lg:max-h-[calc(100vh-6.5rem)]">
+                                <div id="content" class="lg:rounded-lg lg:bg-base-200/[.7] pb-0 overflow-y-scroll overflow-x-clip w-full" on:scroll= move |_| {
                                     let target = window().document().unwrap().query_selector("#content").ok().flatten().unwrap().dyn_into::<HtmlDivElement>().unwrap();
                                     let top = target.scroll_top();
                                     let last_top = last_top.get();

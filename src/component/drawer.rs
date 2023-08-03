@@ -16,7 +16,7 @@ pub fn Drawer(
             <input id="drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-side h-screen lg:h-[calc(100vh-6.5rem)] lg:m-5 lg:rounded-lg z-50">
                 <label for="drawer" class="drawer-overlay" />
-                <ul class="menu p-4 pt-5 pb-5 w-80 h-full bg-base-200 lg:bg-base-200/[.7] text-base-content overflow-scroll flex-nowrap">
+                <ul class="menu p-4 pt-5 pb-5 w-60 h-full bg-base-200 lg:bg-base-200/[.7] text-base-content overflow-scroll flex-nowrap">
                     <p class="font-bold text-lg mb-3">"傳送門"</p>
                     <li><A href="">"首頁"</A></li>
                     <li><A href="/about">"關於我"</A></li>
