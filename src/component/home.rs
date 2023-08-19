@@ -23,10 +23,13 @@ pub fn Home(cx: Scope) -> impl IntoView {
                                         <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
                                             <div class="card-body">
                                                 <div class="flex lg:flex-row flex-col gap-2">
-                                                    <h1 class="card-title justify-start grow">{article.name}</h1>
-                                                    <h2 class="text-sm justify-end">{article.date}</h2>
+                                                    <h1 class="card-title justify-start grow">{&article.name}</h1>
+                                                    <h2 class="text-sm justify-end">{&article.date}</h2>
                                                 </div>
-                                                <p>{article.intro}</p>
+                                                <p class={
+                                                    let article_intro = article.clone().intro;
+                                                    move || if matches!(article_intro, None) {"hidden"} else {""}
+                                                }>{article.intro.unwrap_or_default()}</p>
                                             </div>
                                         </div>
                                     </A>
@@ -46,7 +49,7 @@ pub struct RawArticleData {
     #[serde(with = "time::serde::iso8601")]
     date: OffsetDateTime,
     url: String,
-    intro: String,
+    intro: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -54,7 +57,7 @@ pub struct ArticleData {
     name: String,
     date: String,
     url: String,
-    intro: String,
+    intro: Option<String>,
 }
 
 const DATE_TIME_FORMAT: &[FormatItem<'_>] =

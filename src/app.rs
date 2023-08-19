@@ -1,5 +1,5 @@
 use crate::{
-    component::{about::About, blog::Blog, drawer::Drawer, home::Home, navbar::Navbar},
+    component::{blog::Blog, drawer::Drawer, home::Home, navbar::Navbar},
     error_template::{AppError, ErrorTemplate},
 };
 use leptos::*;
@@ -24,6 +24,9 @@ pub fn App(cx: Scope) -> impl IntoView {
     let current_theme = create_rw_signal(cx, String::new());
     let light_theme = create_rw_signal(cx, String::new());
     let dark_theme = create_rw_signal(cx, String::new());
+    let max_chisaki_mode = create_rw_signal(cx, false);
+    let max_chisaki_mode_css = create_rw_signal(cx, None);
+    let show_max_chisaki_checkbox = create_rw_signal(cx, false);
     let small_screen = create_rw_signal(cx, false);
     let scrolling = create_rw_signal(cx, ScrollDirection::None);
     let (last_top, set_last_top) = create_signal(cx, 0);
@@ -49,6 +52,20 @@ pub fn App(cx: Scope) -> impl IntoView {
         let chosen_light_theme = local_stroage.get_item("theme.light").ok().flatten();
         let chosen_dark_theme = local_stroage.get_item("theme.dark").ok().flatten();
 
+        max_chisaki_mode_css.set(
+            window()
+                .document()
+                .unwrap()
+                .create_element("link")
+                .map(|element| {
+                    element.set_attribute("rel", "stylesheet").ok();
+                    element.set_attribute("type", "text/css").ok();
+                    element.set_attribute("href", "/max-chisaki-mode.css").ok();
+                    element
+                })
+                .ok(),
+        );
+
         light_theme.set(chosen_light_theme.unwrap_or_else(|| String::from("chisaki")));
         dark_theme.set(chosen_dark_theme.unwrap_or_else(|| String::from("coffee")));
 
@@ -72,27 +89,59 @@ pub fn App(cx: Scope) -> impl IntoView {
 
         prefers_color_scheme.set_onchange(Some(colorscheme_closure.as_ref().unchecked_ref()));
         colorscheme_closure.forget();
+
+        if let Ok(Some(value)) = local_stroage.get_item("max_chisaki_mode") {
+            show_max_chisaki_checkbox.set(true);
+            if value == "true" {
+                max_chisaki_mode.set(true);
+                if current_theme.get() == "chisaki" {
+                    window()
+                        .document()
+                        .unwrap()
+                        .get_elements_by_tag_name("head")
+                        .get_with_index(0)
+                        .unwrap()
+                        .append_child(&max_chisaki_mode_css.get().unwrap())
+                        .ok();
+                }
+            }
+        }
     });
 
     view! {
         cx,
+        <Title text="Ming Chang"/>
+        <Meta name="apple-mobile-web-app-capable" content="yes"/>
+        <Meta name="apple-touch-fullscreen" content="yes"/>
         <Suspense fallback=move || view! { cx, <Html lang="zh-Hant" /> }>
             {
                 move || view! { cx,  <Html lang="zh-Hant" attributes=AdditionalAttributes::from(vec![("data-theme", current_theme.get())]) /> }.into_view(cx)
             }
         </Suspense>
-        <Title text="Ming Chang"/>
-        <Meta name="apple-mobile-web-app-capable" content="yes"/>
-        <Meta name="apple-touch-fullscreen" content="yes"/>
         <Stylesheet id="leptos" href="/pkg/new_blog.css" />
         <Router fallback=fallback>
             <main class="bg-scroll bg-cover bg-center h-screen overflow-y-clip" style="background-image: url(/bg.webp)">
                 <div class="flex flex-col bg-gradient-to-b from-transparent to-black">
                     <Navbar scrolling />
                     <div class="flex flex-row max-h-screen">
-                        <div class="drawer lg:drawer-open">
-                            <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme />
-                            <div class="drawer-content flex flex-col items-start justify-start lg:m-5 lg:ml-0 overflow-scroll lg:max-h-[calc(100vh-6.5rem)]">
+                        <div class={move || {
+                            let location = use_location(cx);
+                            if location.pathname.get() == "/" {
+                                "drawer lg:drawer-open"
+                            } else {
+                                "drawer"
+                            }
+                        }}>
+                            <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme max_chisaki_mode show_max_chisaki_checkbox max_chisaki_mode_css />
+                            <div class={move || {
+                                let location = use_location(cx);
+                                    if location.pathname.get() == "/" {
+                                        "drawer-content flex flex-col items-start justify-start lg:m-5 lg:ml-0 overflow-scroll lg:max-h-[calc(100vh-6.5rem)]"
+                                    } else {
+                                        "drawer-content flex flex-col items-start justify-start lg:m-5 overflow-scroll lg:max-h-[calc(100vh-6.5rem)]"
+                                    }
+                                }}
+                            >
                                 <div id="content" class="lg:rounded-lg lg:bg-base-200/[.7] pb-0 overflow-y-scroll overflow-x-clip w-full" on:scroll= move |_| {
                                     let target = window().document().unwrap().query_selector("#content").ok().flatten().unwrap().dyn_into::<HtmlDivElement>().unwrap();
                                     let top = target.scroll_top();
@@ -109,8 +158,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                                     set_last_top.set(top);
                                 }>
                                     <Routes>
-                                        <Route path="/blog/:filename" view= |cx| view! { cx, <Blog />} ssr=SsrMode::Async/>
-                                        <Route path="/about" view= |cx| view! { cx, <About />} ssr=SsrMode::Async/>
+                                        <Route path="/blog/:filename" view= |cx| view! { cx, <Blog />} ssr=SsrMode::OutOfOrder/>
                                         <Route path="" view= |cx| view! { cx, <Home /> } ssr=SsrMode::Async/>
                                     </Routes>
                                 </div>

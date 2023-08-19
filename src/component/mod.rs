@@ -1,4 +1,3 @@
-pub mod about;
 pub mod blog;
 pub mod drawer;
 pub mod home;
