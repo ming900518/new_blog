@@ -157,7 +157,7 @@ pub fn App() -> impl IntoView {
                                     set_last_top.set(top);
                                 }>
                                     <Routes>
-                                        <Route path="/blog/:filename" view= || view! { <Blog />} ssr=SsrMode::OutOfOrder />
+                                        <Route path="/blog/:filename" view= || view! { <Blog />} ssr=SsrMode::Async />
                                         <Route path="" view= || view! { <Home /> } ssr=SsrMode::Async />
                                     </Routes>
                                 </div>

@@ -21,31 +21,45 @@ pub fn Blog() -> impl IntoView {
     let param = use_params::<BlogParams>();
     let article_content = create_blocking_resource(
         move || param.get().unwrap().filename.unwrap(),
-        move |filename| async {
-            fetch_article_content(filename)
-                .await
-                .ok()
-                .unwrap_or_default()
-        },
+        fetch_article_content,
     );
 
     view! {
-        <Suspense fallback= move || view!{<div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg"><div class="card-body h-screen md:h-[calc(100vh-8.75rem)]" /></div>}>
-            {move || article_content.with(|article| {
-                let article = article.clone().unwrap();
-                let title = article.title;
-                let content = article.content;
-                view!{
-                    <Title text={format!("{} - Ming Chang", title)}/>
-                    <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
-                        <div class="card-body">
-                            <div class="article-content">
-                                <article id="article-content" inner_html={content}/>
+        <Suspense fallback=move || view!{<div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg"><div class="card-body h-screen md:h-[calc(100vh-8.75rem)]" /></div>}>
+            {move ||
+                match article_content.get().transpose() {
+                    Ok(article) => {
+                        let article = article.unwrap_or_default();
+                        view!{
+                            <>
+                            <Title text={format!("{} - Ming Chang", article.title)}/>
+                            <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
+                                <div class="card-body">
+                                    <div class="article-content">
+                                        <article id="article-content" inner_html={article.content}/>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                            </>
+                        }
+                    }
+                    Err(error) =>
+                        view!{
+                            <>
+                                <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
+                                    <div class="card-body">
+                                        <div class="article-content">
+                                            <article id="article-content">
+                                                <h1>"發生錯誤"</h1>
+                                                <p>{format!("{error:?}")}</p>
+                                            </article>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        }
+                    }
                 }
-            })}
         </Suspense>
     }
 }

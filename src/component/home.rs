@@ -7,39 +7,76 @@ use time::{format_description::FormatItem, OffsetDateTime};
 
 #[component]
 pub fn Home() -> impl IntoView {
-    let article_list = create_blocking_resource(|| (), |_| async { fetch_article_list().await.ok().unwrap_or_default() });
+    let article_list_request = create_resource(
+        || (),
+        |_|  fetch_article_list(),
+    );
 
     view! {
-        <div class="p-5">
-            <Suspense fallback=move || view! {}>
-                {move || {
-                    article_list.with( |articles| articles
-                        .clone()
-                        .map(|articles| {
-                            articles
-                                .into_iter()
-                                .map(|article| view! {
-                                    <A href={format!("/blog/{}", article.url)}>
+        <Suspense fallback=move || view! {}>
+            {move || {
+                view! {
+                    <div class="p-5">
+                    {
+                        match article_list_request.get().transpose() {
+                            Ok(Some(articles)) => {
+                                articles
+                                    .into_iter()
+                                    .map(|article| view! {
+                                        <A href={format!("/blog/{}", article.url)}>
+                                            <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
+                                                <div class="card-body">
+                                                    <div class="flex lg:flex-row flex-col gap-2">
+                                                        <h1 class="card-title justify-start grow">{&article.name}</h1>
+                                                        <h2 class="text-sm justify-end">{&article.date}</h2>
+                                                    </div>
+                                                    <p class={
+                                                        let article_intro = article.clone().intro;
+                                                        move || if article_intro.is_none() {"hidden"} else {""}
+                                                    }>{article.intro.unwrap_or_default()}</p>
+                                                </div>
+                                            </div>
+                                        </A>
+                                    })
+                                    .collect_view()
+                            },
+                            Err(error) => {
+                                vec![
+                                    view!{
                                         <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
                                             <div class="card-body">
                                                 <div class="flex lg:flex-row flex-col gap-2">
-                                                    <h1 class="card-title justify-start grow">{&article.name}</h1>
-                                                    <h2 class="text-sm justify-end">{&article.date}</h2>
+                                                    <h1 class="card-title justify-start grow">"發生錯誤"</h1>
+                                                    <h2 class="text-sm justify-end"></h2>
                                                 </div>
-                                                <p class={
-                                                    let article_intro = article.clone().intro;
-                                                    move || if article_intro.is_none() {"hidden"} else {""}
-                                                }>{article.intro.unwrap_or_default()}</p>
+                                                <p>{format!("{error:?}")}</p>
                                             </div>
                                         </div>
-                                    </A>
-                                })
-                                .collect_view()
-                        })
-                    )
-                }}
-            </Suspense>
-        </div>
+                                    }
+                                ].collect_view()
+                            }
+                            _ => {
+                                vec![
+                                    view!{
+                                        <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
+                                            <div class="card-body">
+                                                <div class="flex lg:flex-row flex-col gap-2">
+                                                    <h1 class="card-title justify-start grow">"發生未知錯誤"</h1>
+                                                    <h2 class="text-sm justify-end"></h2>
+                                                </div>
+                                                <p></p>
+                                            </div>
+                                        </div>
+                                    }
+                                ].collect_view()
+                            }
+
+                        }
+                    }
+                    </div>
+                }
+            }}
+        </Suspense>
     }
 }
 
