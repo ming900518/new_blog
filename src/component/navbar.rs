@@ -1,15 +1,16 @@
 use crate::app::ScrollDirection;
+use leptos::SignalGet;
 use leptos::*;
 use leptos_router::*;
 
 #[component]
-pub fn Navbar(cx: Scope, scrolling: RwSignal<ScrollDirection>) -> impl IntoView {
-    view! { cx,
-        <Show when=move || !matches!{scrolling.get(), ScrollDirection::Down} fallback=|_| ()>
+pub fn Navbar(scrolling: RwSignal<ScrollDirection>) -> impl IntoView {
+    view! {
+        <Show when=move || !matches!{scrolling.get(), ScrollDirection::Down} fallback=|| ()>
             <header class="navbar bg-base-300 supports-backdrop-blur:bg-base-300/95">
                 <div class="flex-none">
                     <label for="drawer" class={move || {
-                            let location = use_location(cx);
+                            let location = use_location();
                             if location.pathname.get() == "/" {
                                 "btn btn-square btn-ghost lg:hidden"
                             } else {

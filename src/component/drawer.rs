@@ -5,7 +5,6 @@ use web_sys::{Element, HtmlInputElement, HtmlSelectElement};
 
 #[component]
 pub fn Drawer(
-    cx: Scope,
     light_theme: RwSignal<String>,
     dark_theme: RwSignal<String>,
     current_theme: RwSignal<String>,
@@ -14,10 +13,10 @@ pub fn Drawer(
     max_chisaki_mode_css: RwSignal<Option<Element>>,
     show_max_chisaki_checkbox: RwSignal<bool>,
 ) -> impl IntoView {
-    let location = use_location(cx);
-    let target = create_rw_signal(cx, None);
+    let location = use_location();
+    let target = create_rw_signal(None);
 
-    create_effect(cx, move |_| {
+    create_effect(move |_| {
         target.set(
             window()
                 .document()
@@ -27,7 +26,7 @@ pub fn Drawer(
         );
     });
 
-    view! { cx,
+    view! {
         <>
             <input id="drawer" type="checkbox" class="drawer-toggle" />
             <div class={move || {
@@ -53,8 +52,8 @@ pub fn Drawer(
                     <div class="divider"/>
                     <p class="font-bold text-lg mt-3 mb-3">"主題設定"</p>
                     <label class="label">"亮色"</label>
-                    <Suspense fallback=move || view! { cx,  }>
-                        {view! { cx,
+                    <Suspense fallback=move || view! {}>
+                        {view! {
                             <>
                             <select
                                 class="select select-bordered select-ghost"
@@ -113,12 +112,12 @@ pub fn Drawer(
                                 </label>
                             </div>
                             </>
-                        }.into_view(cx)}
+                        }.into_view()}
                     </Suspense>
                     <label class="label">"暗色"</label>
-                    <Suspense fallback=move || view! { cx,  }>
+                    <Suspense fallback=move || view! {}>
                     {
-                        move || view! { cx,
+                        move || view! {
                             <select
                                 class="select select-bordered select-ghost"
                                 on:change=move |e| {
@@ -135,7 +134,7 @@ pub fn Drawer(
                                 <option value="dark" label="Dark" selected=move || dark_theme.get() == "dark" />
                                 <option value="dracula" label="Dracula" selected=move || dark_theme.get() == "dracula" />
                             </select>
-                        }.into_view(cx)
+                        }.into_view()
                     }
                     </Suspense>
                 </ul>

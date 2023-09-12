@@ -11,28 +11,31 @@ use leptos::{
 use leptos_meta::Title;
 use leptos_router::*;
 
-
 #[derive(Params, PartialEq, Clone)]
 struct BlogParams {
     filename: Option<String>,
 }
 
 #[component]
-pub fn Blog(cx: Scope) -> impl IntoView {
-    let param = use_params::<BlogParams>(cx);
-    let article_content = create_resource(
-        cx,
+pub fn Blog() -> impl IntoView {
+    let param = use_params::<BlogParams>();
+    let article_content = create_blocking_resource(
         move || param.get().unwrap().filename.unwrap(),
-        move |filename| async { fetch_article_content(filename).await },
+        move |filename| async {
+            fetch_article_content(filename)
+                .await
+                .ok()
+                .unwrap_or_default()
+        },
     );
 
-    view! { cx,
-        <Suspense fallback= move || view!{cx, <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg"><div class="card-body h-screen md:h-[calc(100vh-8.75rem)]" /></div>}>
-            {move || article_content.with(cx, |article| {
+    view! {
+        <Suspense fallback= move || view!{<div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg"><div class="card-body h-screen md:h-[calc(100vh-8.75rem)]" /></div>}>
+            {move || article_content.with(|article| {
                 let article = article.clone().unwrap();
                 let title = article.title;
                 let content = article.content;
-                view!{ cx,
+                view!{
                     <Title text={format!("{} - Ming Chang", title)}/>
                     <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
                         <div class="card-body">
@@ -47,7 +50,7 @@ pub fn Blog(cx: Scope) -> impl IntoView {
     }
 }
 
-#[derive(Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct BlogArticleContent {
     title: String,
     content: String,
@@ -93,7 +96,6 @@ pub async fn fetch_article_content(
                         },
                     },
                 );
-
             Ok(BlogArticleContent {
                 title,
                 content

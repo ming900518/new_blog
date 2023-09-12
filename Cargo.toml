@@ -11,10 +11,10 @@ axum = { version = "*", optional = true }
 console_error_panic_hook = "*"
 console_log = "*"
 cfg-if = "*"
-leptos = { version = "*" }
-leptos_axum = { version = "*", optional = true }
-leptos_meta = { version = "*" }
-leptos_router = { version = "*" }
+leptos = { version = "0.5.0-rc1" }
+leptos_axum = { version = "0.5.0-rc1", optional = true }
+leptos_meta = { version = "0.5.0-rc1" }
+leptos_router = { version = "0.5.0-rc1" }
 log = "*"
 simple_logger = "*"
 tokio = { version = "*", optional = true }

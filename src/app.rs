@@ -18,20 +18,20 @@ pub enum ScrollDirection {
 }
 
 #[component]
-pub fn App(cx: Scope) -> impl IntoView {
-    provide_meta_context(cx);
-    let current_prefers_dark_scheme = create_rw_signal(cx, false);
-    let current_theme = create_rw_signal(cx, String::new());
-    let light_theme = create_rw_signal(cx, String::new());
-    let dark_theme = create_rw_signal(cx, String::new());
-    let max_chisaki_mode = create_rw_signal(cx, false);
-    let max_chisaki_mode_css = create_rw_signal(cx, None);
-    let show_max_chisaki_checkbox = create_rw_signal(cx, false);
-    let small_screen = create_rw_signal(cx, false);
-    let scrolling = create_rw_signal(cx, ScrollDirection::None);
-    let (last_top, set_last_top) = create_signal(cx, 0);
+pub fn App() -> impl IntoView {
+    provide_meta_context();
+    let current_prefers_dark_scheme = create_rw_signal(false);
+    let current_theme = create_rw_signal(String::new());
+    let light_theme = create_rw_signal(String::new());
+    let dark_theme = create_rw_signal(String::new());
+    let max_chisaki_mode = create_rw_signal(false);
+    let max_chisaki_mode_css = create_rw_signal(None);
+    let show_max_chisaki_checkbox = create_rw_signal(false);
+    let small_screen = create_rw_signal(false);
+    let scrolling = create_rw_signal(ScrollDirection::None);
+    let (last_top, set_last_top) = create_signal(0);
 
-    create_effect(cx, move |_| {
+    create_effect(move |_| {
         if let Ok(width) = window().inner_width() {
             if width.as_f64().unwrap_or(f64::MAX) > 769.0 {
                 small_screen.set(false);
@@ -109,13 +109,12 @@ pub fn App(cx: Scope) -> impl IntoView {
     });
 
     view! {
-        cx,
         <Title text="Ming Chang"/>
         <Meta name="apple-mobile-web-app-capable" content="yes"/>
         <Meta name="apple-touch-fullscreen" content="yes"/>
         <Suspense fallback=move || view! { cx, <Html lang="zh-Hant" /> }>
             {
-                move || view! { cx,  <Html lang="zh-Hant" attributes=AdditionalAttributes::from(vec![("data-theme", current_theme.get())]) /> }.into_view(cx)
+                move || view! { <Html lang="zh-Hant" attributes=AdditionalAttributes::from(vec![("data-theme", current_theme.get())]) /> }.into_view()
             }
         </Suspense>
         <Stylesheet id="leptos" href="/pkg/new_blog.css" />
@@ -125,7 +124,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                     <Navbar scrolling />
                     <div class="flex flex-row max-h-screen">
                         <div class={move || {
-                            let location = use_location(cx);
+                            let location = use_location();
                             if location.pathname.get() == "/" {
                                 "drawer lg:drawer-open"
                             } else {
@@ -134,7 +133,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                         }}>
                             <Drawer light_theme dark_theme current_theme current_prefers_dark_scheme max_chisaki_mode show_max_chisaki_checkbox max_chisaki_mode_css />
                             <div class={move || {
-                                let location = use_location(cx);
+                                let location = use_location();
                                     if location.pathname.get() == "/" {
                                         "drawer-content flex flex-col items-start justify-start lg:m-5 lg:ml-0 overflow-scroll lg:max-h-[calc(100vh-6.5rem)]"
                                     } else {
@@ -158,8 +157,8 @@ pub fn App(cx: Scope) -> impl IntoView {
                                     set_last_top.set(top);
                                 }>
                                     <Routes>
-                                        <Route path="/blog/:filename" view= |cx| view! { cx, <Blog />} ssr=SsrMode::OutOfOrder/>
-                                        <Route path="" view= |cx| view! { cx, <Home /> } ssr=SsrMode::Async/>
+                                        <Route path="/blog/:filename" view= || view! { <Blog />} ssr=SsrMode::OutOfOrder />
+                                        <Route path="" view= || view! { <Home /> } ssr=SsrMode::Async />
                                     </Routes>
                                 </div>
                             </div>
@@ -171,11 +170,11 @@ pub fn App(cx: Scope) -> impl IntoView {
     }
 }
 
-fn fallback(cx: Scope) -> View {
+fn fallback() -> View {
     let mut outside_errors = Errors::default();
     outside_errors.insert_with_default_key(AppError::NotFound);
-    view! { cx,
+    view! {
         <ErrorTemplate outside_errors/>
     }
-    .into_view(cx)
+    .into_view()
 }
