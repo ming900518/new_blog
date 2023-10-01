@@ -5,75 +5,71 @@ use comrak::{
 };
 use http::StatusCode;
 use leptos::{
-    server_fn::serde::{Deserialize, Serialize},
+    logging::log,
     *,
 };
 use leptos_meta::Title;
 use leptos_router::*;
 
-#[derive(Params, PartialEq, Clone)]
-struct BlogParams {
-    filename: Option<String>,
-}
+use crate::types::{BlogArticleContent, BlogParams};
 
 #[component]
 pub fn Blog() -> impl IntoView {
     let param = use_params::<BlogParams>();
-    let article_content = create_blocking_resource(
+    let article_content = create_resource(
         move || param.get().unwrap().filename.unwrap(),
         fetch_article_content,
     );
 
     view! {
-        <Suspense fallback=move || ()>
-            {move ||
-                match article_content.get().transpose() {
-                    Ok(article) => {
-                        let article = article.unwrap_or_default();
-                        view!{
-                            <>
-                            <Title text={format!("{} - Ming Chang", article.title)}/>
-                            <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
-                                <div class="card-body">
-                                    <div class="article-content">
-                                        <article id="article-content" inner_html={article.content}/>
-                                    </div>
-                                </div>
-                            </div>
-                            </>
-                        }
-                    }
-                    Err(error) =>
-                        view!{
-                            <>
-                                <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
-                                    <div class="card-body">
-                                        <div class="article-content">
-                                            <article id="article-content">
-                                                <h1>"發生錯誤"</h1>
-                                                <p>{format!("{error:?}")}</p>
-                                            </article>
+        <div class="drawer-content flex flex-col items-center justify-center overflow-scroll">
+            <div id="content" class="overflow-y-scroll overflow-x-clip w-full h-full">
+                <Transition fallback=move || view!(<span className="loading loading-spinner loading-lg"></span>)>
+                    {move ||
+                        match article_content.get().transpose() {
+                            Ok(article) => {
+                                let article = article.unwrap_or_default();
+                                view!{
+                                    <>
+                                    <Title text={format!("{} - Ming Chang", article.title)}/>
+                                    <div class="card bg-base-100 shadow-xl md:m-5 md:mb-20 lg:ml-20 lg:mr-20 object-fill rounded-none md:rounded-lg">
+                                        <div class="card-body">
+                                            <div class="article-content">
+                                                <article id="article-content" inner_html={article.content}/>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </>
+                                    </>
+                                }
+                            }
+                            Err(error) =>
+                                view!{
+                                    <>
+                                        <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
+                                            <div class="card-body">
+                                                <div class="article-content">
+                                                    <article id="article-content">
+                                                        <h1>"發生錯誤"</h1>
+                                                        <p>{format!("{error:#?}")}</p>
+                                                    </article>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                }
+                            }
                         }
-                    }
-                }
-        </Suspense>
+                </Transition>
+            </div>
+        </div>
     }
 }
 
-#[derive(Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct BlogArticleContent {
-    title: String,
-    content: String,
-}
-
-#[server(FetchArticleContent, "/api")]
+#[server]
 pub async fn fetch_article_content(
     article_filename: String,
 ) -> Result<BlogArticleContent, ServerFnError> {
+    log!("Fetching: {}", article_filename);
     match reqwest::get(format!("https://raw.githubusercontent.com/ming900518/articles/main/{article_filename}")).await {
         Ok(resp) => {
             let resp_text = resp.text().await.unwrap_or_else(|_| "載入失敗\n請回上一頁".to_string());
