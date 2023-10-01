@@ -2,7 +2,6 @@ use leptos::{
     server_fn::serde::{Deserialize, Serialize},
     *,
 };
-use leptos_router::A;
 use time::{format_description::FormatItem, OffsetDateTime};
 
 #[component]
@@ -13,7 +12,7 @@ pub fn Home() -> impl IntoView {
     );
 
     view! {
-        <Suspense fallback=move || view! {}>
+        <Suspense fallback=move || ()>
             {move || {
                 view! {
                     <div class="p-5">
@@ -23,7 +22,7 @@ pub fn Home() -> impl IntoView {
                                 articles
                                     .into_iter()
                                     .map(|article| view! {
-                                        <A href={format!("/blog/{}", article.url)}>
+                                        <a href={format!("/blog/{}", article.url)}>
                                             <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
                                                 <div class="card-body">
                                                     <div class="flex lg:flex-row flex-col gap-2">
@@ -36,7 +35,7 @@ pub fn Home() -> impl IntoView {
                                                     }>{article.intro.unwrap_or_default()}</p>
                                                 </div>
                                             </div>
-                                        </A>
+                                        </a>
                                     })
                                     .collect_view()
                             },

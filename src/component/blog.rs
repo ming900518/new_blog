@@ -25,7 +25,7 @@ pub fn Blog() -> impl IntoView {
     );
 
     view! {
-        <Suspense fallback=move || view!{<div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg"><div class="card-body h-screen md:h-[calc(100vh-8.75rem)]" /></div>}>
+        <Suspense fallback=move || ()>
             {move ||
                 match article_content.get().transpose() {
                     Ok(article) => {

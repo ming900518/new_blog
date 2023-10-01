@@ -47,7 +47,7 @@ pub fn Drawer(
                         }}
             >
                     <p class="font-bold text-lg mb-3">"傳送門"</p>
-                    <li><A href="">"文章列表"</A></li>
+                    <li><a href="/">"文章列表"</a></li>
                     <li><a href="https://mingchang.tw/">"關於我"</a></li>
                     <div class="divider"/>
                     <p class="font-bold text-lg mt-3 mb-3">"主題設定"</p>
