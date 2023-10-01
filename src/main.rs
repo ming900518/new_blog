@@ -16,7 +16,7 @@ async fn main() {
     let conf = get_configuration(None).await.unwrap();
     let leptos_options = conf.leptos_options;
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    let routes = generate_route_list(|| view! { <App/> }).await;
+    let routes = generate_route_list(|| view! { <App/> });
 
     let app = Router::new()
         .route("/api/*fn_name", post(leptos_axum::handle_server_fns))

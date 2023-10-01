@@ -53,7 +53,7 @@ pub fn ErrorTemplate(
         }
     }}
 
-    view! {cx,
+    view! {
         <h1>{if errors.len() > 1 {"Errors"} else {"Error"}}</h1>
         <For
             // a function that returns the items we're iterating over; a signal is fine
@@ -61,11 +61,10 @@ pub fn ErrorTemplate(
             // a unique key for each item as a reference
             key=|(index, _error)| *index
             // renders each item to a view
-            view= move |error| {
+            children= move |error| {
                 let error_string = error.1.to_string();
                 let error_code= error.1.status_code();
                 view! {
-                    cx,
                     <h2>{error_code.to_string()}</h2>
                     <p>"Error: " {error_string}</p>
                 }

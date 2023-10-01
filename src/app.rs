@@ -112,9 +112,9 @@ pub fn App() -> impl IntoView {
         <Title text="Ming Chang"/>
         <Meta name="apple-mobile-web-app-capable" content="yes"/>
         <Meta name="apple-touch-fullscreen" content="yes"/>
-        <Suspense fallback=move || view! { cx, <Html lang="zh-Hant" /> }>
+        <Suspense fallback=move || view! { <Html lang="zh-Hant" /> }>
             {
-                move || view! { <Html lang="zh-Hant" attributes=AdditionalAttributes::from(vec![("data-theme", current_theme.get())]) /> }.into_view()
+                move || view! { <Html lang="zh-Hant" attr:data-theme={ current_theme.get() } /> }.into_view()
             }
         </Suspense>
         <Stylesheet id="leptos" href="/pkg/new_blog.css" />
