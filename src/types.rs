@@ -39,7 +39,7 @@ pub struct BlogParams {
     pub filename: Option<String>,
 }
 
-#[derive(Clone, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, Default, Debug)]
 pub struct BlogArticleContent {
     pub title: String,
     pub content: String,

@@ -2,6 +2,7 @@ use crate::{
     component::{blog::Blog, drawer::Drawer, home::Home, navbar::Navbar},
     error_template::{AppError, ErrorTemplate},
 };
+use http::{header::CONTENT_TYPE, HeaderValue};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -9,6 +10,15 @@ use leptos_router::*;
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
+
+    #[cfg(feature = "ssr")]
+    if let Some(res_options) = use_context::<leptos_axum::ResponseOptions>() {
+        res_options.append_header(
+            CONTENT_TYPE,
+            HeaderValue::from_static("text/html; charset=utf-8"),
+        );
+    }
+
     view! {
         <Title text="Ming Chang"/>
         <Meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -20,18 +30,22 @@ pub fn App() -> impl IntoView {
                     <Navbar />
                     <div class="flex flex-row max-h-screen drawer">
                         <Drawer />
-                        <Routes>
-                            <Route
-                                ssr=SsrMode::Async
-                                path="/blog/:filename"
-                                view=Blog
-                            />
-                            <Route
-                                ssr=SsrMode::Async
-                                path=""
-                                view=Home
-                            />
-                        </Routes>
+                        <div class="drawer-content flex flex-col items-start justify-start overflow-scroll">
+                            <div id="content" class="pb-0 overflow-y-scroll overflow-x-clip w-full h-full">
+                                <Routes>
+                                    <Route
+                                        ssr=SsrMode::InOrder
+                                        path="/blog/:filename"
+                                        view=Blog
+                                    />
+                                    <Route
+                                        ssr=SsrMode::Async
+                                        path=""
+                                        view=Home
+                                    />
+                                </Routes>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>

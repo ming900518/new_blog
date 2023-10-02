@@ -17,51 +17,31 @@ use crate::types::{BlogArticleContent, BlogParams};
 pub fn Blog() -> impl IntoView {
     let param = use_params::<BlogParams>();
     let article_content = create_resource(
-        move || param.get().unwrap().filename.unwrap(),
+        move || param.get().ok().and_then(|inner| inner.filename).unwrap(),
         fetch_article_content,
     );
 
     view! {
-        <div class="drawer-content flex flex-col items-center justify-center overflow-scroll">
-            <div id="content" class="overflow-y-scroll overflow-x-clip w-full h-full">
-                <Transition fallback=move || view!(<span className="loading loading-spinner loading-lg"></span>)>
-                    {move ||
-                        match article_content.get().transpose() {
-                            Ok(article) => {
-                                let article = article.unwrap_or_default();
-                                view!{
-                                    <>
-                                    <Title text={format!("{} - Ming Chang", article.title)}/>
-                                    <div class="card bg-base-100 shadow-xl md:m-5 md:mb-20 lg:ml-20 lg:mr-20 object-fill rounded-none md:rounded-lg">
-                                        <div class="card-body">
-                                            <div class="article-content">
-                                                <article id="article-content" inner_html={article.content}/>
-                                            </div>
-                                        </div>
+        <Transition fallback=move || view!(<span className="loading loading-spinner loading-lg"></span>)>
+            {move ||
+                if let Some(Ok(article)) = article_content.get() {
+                    view!{
+                        <>
+                            <Title text={format!("{} - Ming Chang", article.title)}/>
+                            <div class="card bg-base-100 shadow-xl md:m-5 md:mb-20 lg:ml-20 lg:mr-20 object-fill rounded-none md:rounded-lg">
+                                <div class="card-body">
+                                    <div class="article-content">
+                                        <article id="article-content" inner_html={article.content}/>
                                     </div>
-                                    </>
-                                }
-                            }
-                            Err(error) =>
-                                view!{
-                                    <>
-                                        <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
-                                            <div class="card-body">
-                                                <div class="article-content">
-                                                    <article id="article-content">
-                                                        <h1>"發生錯誤"</h1>
-                                                        <p>{format!("{error:#?}")}</p>
-                                                    </article>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </>
-                                }
-                            }
-                        }
-                </Transition>
-            </div>
-        </div>
+                                </div>
+                            </div>
+                        </>
+                    }.into_view()
+                } else {
+                    view!{}.into_view()
+                }
+            }
+        </Transition>
     }
 }
 

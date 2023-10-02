@@ -9,63 +9,58 @@ pub fn Home() -> impl IntoView {
     let article_list_request = create_resource(|| (), move |_| fetch_article_list());
 
     view! {
-        <div class="drawer-content flex flex-col items-start justify-start overflow-scroll">
-            <div id="content" class="pb-0 overflow-y-scroll overflow-x-clip w-full h-full">
-                <Transition fallback=move || view!(<span className="loading loading-spinner loading-lg"></span>)>
-                    {move || {
-                        view! {
-                            <Title text="Ming Chang"/>
-                            <div class="p-5">
-                            {
-                                match article_list_request.get().transpose() {
-                                    Ok(Some(articles)) => {
-                                        articles
-                                            .into_iter()
-                                            .map(|article| view! {
-                                                <A href={format!("/blog/{}", article.url)}>
-                                                    <div class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300">
-                                                        <div class="card-body">
-                                                            <div class="flex lg:flex-row flex-col gap-2">
-                                                                <h1 class="card-title justify-start grow">{&article.name}</h1>
-                                                                <h2 class="text-sm justify-end">{&article.date}</h2>
-                                                            </div>
-                                                            <p class={
-                                                                let article_intro = article.clone().intro;
-                                                                move || if article_intro.is_none() {"hidden"} else {""}
-                                                            }>{article.intro.unwrap_or_default()}</p>
-                                                        </div>
+        <Transition fallback=move || ()>
+            {move || {
+                view! {
+                    <Title text="Ming Chang"/>
+                    <div class="p-5">
+                    {
+                        match article_list_request.get().transpose() {
+                            Ok(Some(articles)) => {
+                                articles
+                                    .into_iter()
+                                    .map(|article| view! {
+                                        <div class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300">
+                                            <A href={format!("/blog/{}", article.url)}>
+                                                <div class="card-body">
+                                                    <div class="flex lg:flex-row flex-col gap-2">
+                                                        <h1 class="card-title justify-start grow">{&article.name}</h1>
+                                                        <h2 class="text-sm justify-end">{&article.date}</h2>
                                                     </div>
-                                                </A>
-                                            })
-                                            .collect_view()
-                                    },
-                                    Err(error) => {
-                                        vec![
-                                            view!{
-                                                <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
-                                                    <div class="card-body">
-                                                        <div class="flex lg:flex-row flex-col gap-2">
-                                                            <h1 class="card-title justify-start grow">"發生錯誤"</h1>
-                                                            <h2 class="text-sm justify-end"></h2>
-                                                        </div>
-                                                        <p>{format!("{error:?}")}</p>
-                                                    </div>
+                                                    <p class={
+                                                        let article_intro = article.clone().intro;
+                                                        move || if article_intro.is_none() {"hidden"} else {""}
+                                                    }>{article.intro.unwrap_or_default()}</p>
                                                 </div>
-                                            }
-                                        ].collect_view()
+                                            </A>
+                                        </div>
+                                    })
+                                    .collect_view()
+                            },
+                            Err(error) => {
+                                vec![
+                                    view!{
+                                        <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
+                                            <div class="card-body">
+                                                <div class="flex lg:flex-row flex-col gap-2">
+                                                    <h1 class="card-title justify-start grow">"發生錯誤"</h1>
+                                                    <h2 class="text-sm justify-end"></h2>
+                                                </div>
+                                                <p>{format!("{error:?}")}</p>
+                                            </div>
+                                        </div>
                                     }
-                                    _ => {
-                                        vec![view!{}].collect_view()
-                                    }
-
-                                }
+                                ].collect_view()
                             }
-                            </div>
+                            _ => {
+                                vec![view!{}].collect_view()
+                            }
                         }
-                    }}
-                </Transition>
-            </div>
-        </div>
+                    }
+                    </div>
+                }
+            }}
+        </Transition>
     }
 }
 
