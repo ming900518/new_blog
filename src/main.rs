@@ -1,11 +1,10 @@
-use leptos::logging::log;
-
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
     use std::net::SocketAddr;
 
     use axum::{routing::post, Router};
+    use axum_server::tls_openssl::OpenSSLConfig;
     use leptos::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
     use new_blog::app::*;
@@ -15,7 +14,6 @@ async fn main() {
 
     let conf = get_configuration(None).await.unwrap();
     let leptos_options = conf.leptos_options;
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     let routes = generate_route_list(|| view! { <App/> });
 
     let app = Router::new()
@@ -24,11 +22,24 @@ async fn main() {
         .fallback(file_and_error_handler)
         .with_state(leptos_options);
 
-    log!("Listening on http://{}", &addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    match OpenSSLConfig::from_pem_file("ssl/ssl.pem", "ssl/ssl.key") {
+        Ok(ssl_config) => {
+            let addr = SocketAddr::from(([0, 0, 0, 0], 443));
+            log::info!("SSL enabled. Listening on {}", addr);
+            axum_server::bind_openssl(addr, ssl_config)
+                .serve(app.into_make_service())
+                .await
+                .expect("Server startup failed.");
+        }
+        Err(_) => {
+            let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+            log::info!("SSL disabled. Listening on {}", addr);
+            axum_server::bind(addr)
+                .serve(app.into_make_service())
+                .await
+                .expect("Server startup failed.");
+        }
+    }
 }
 
 #[cfg(not(feature = "ssr"))]

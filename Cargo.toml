@@ -7,6 +7,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+axum-server = { version = "*", features = ["tls-openssl"], optional = true}
 axum = { version = "*", optional = true }
 console_error_panic_hook = "*"
 console_log = "*"
@@ -43,6 +44,7 @@ comrak = { version = "*" }
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
 ssr = [
     "dep:axum",
+    "dep:axum-server",
     "dep:tokio",
     "dep:tower",
     "dep:tower-http",

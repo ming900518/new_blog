@@ -2,7 +2,7 @@ use leptos::*;
 use leptos_meta::Title;
 use leptos_router::A;
 
-use crate::types::{ArticleData, RawArticleData};
+use crate::types::ArticleData;
 
 #[component]
 pub fn Home() -> impl IntoView {
@@ -66,6 +66,7 @@ pub fn Home() -> impl IntoView {
 
 #[server]
 pub async fn fetch_article_list() -> Result<Vec<ArticleData>, ServerFnError> {
+    use crate::types::RawArticleData;
     let resp =
         reqwest::get("https://raw.githubusercontent.com/ming900518/articles/main/article.json")
             .await

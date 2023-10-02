@@ -2,7 +2,6 @@ use crate::{
     component::{blog::Blog, drawer::Drawer, home::Home, navbar::Navbar},
     error_template::{AppError, ErrorTemplate},
 };
-use http::{header::CONTENT_TYPE, HeaderValue};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -14,8 +13,8 @@ pub fn App() -> impl IntoView {
     #[cfg(feature = "ssr")]
     if let Some(res_options) = use_context::<leptos_axum::ResponseOptions>() {
         res_options.append_header(
-            CONTENT_TYPE,
-            HeaderValue::from_static("text/html; charset=utf-8"),
+            http::header::CONTENT_TYPE,
+            http::HeaderValue::from_static("text/html; charset=utf-8"),
         );
     }
 

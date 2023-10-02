@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-use std::sync::OnceLock;
-
 use leptos::*;
 use leptos_meta::Title;
 use leptos_router::*;
@@ -58,6 +55,8 @@ pub async fn fetch_article_content(
         ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
     };
     use http::StatusCode;
+    use std::collections::HashMap;
+    use std::sync::OnceLock;
     use tokio::sync::Mutex;
     static RENDERED_PAGES: OnceLock<Mutex<HashMap<(String, String), BlogArticleContent>>> =
         OnceLock::new();
