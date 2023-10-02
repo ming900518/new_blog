@@ -35,7 +35,7 @@ pub fn App() -> impl IntoView {
                                 <Routes>
                                     <Route
                                         ssr=SsrMode::InOrder
-                                        path="/blog/:filename"
+                                        path="/blog"
                                         view=Blog
                                     />
                                     <Route

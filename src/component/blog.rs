@@ -1,13 +1,7 @@
-use comrak::plugins::syntect::SyntectAdapter;
-use comrak::{
-    markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
-    ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
-};
-use http::StatusCode;
-use leptos::{
-    logging::log,
-    *,
-};
+use std::collections::HashMap;
+use std::sync::OnceLock;
+
+use leptos::*;
 use leptos_meta::Title;
 use leptos_router::*;
 
@@ -15,10 +9,18 @@ use crate::types::{BlogArticleContent, BlogParams};
 
 #[component]
 pub fn Blog() -> impl IntoView {
-    let param = use_params::<BlogParams>();
+    let param = use_query::<BlogParams>();
     let article_content = create_resource(
-        move || param.get().ok().and_then(|inner| inner.filename).unwrap(),
-        fetch_article_content,
+        move || param.get().ok(),
+        move |data| {
+            data.map(|value| {
+                fetch_article_content(
+                    value.commit.unwrap_or_default(),
+                    value.filename.unwrap_or_default(),
+                )
+            })
+            .unwrap()
+        },
     );
 
     view! {
@@ -47,10 +49,28 @@ pub fn Blog() -> impl IntoView {
 
 #[server]
 pub async fn fetch_article_content(
-    article_filename: String,
+    commit: String,
+    filename: String,
 ) -> Result<BlogArticleContent, ServerFnError> {
-    log!("Fetching: {}", article_filename);
-    match reqwest::get(format!("https://raw.githubusercontent.com/ming900518/articles/main/{article_filename}")).await {
+    use comrak::plugins::syntect::SyntectAdapter;
+    use comrak::{
+        markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
+        ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
+    };
+    use http::StatusCode;
+    use tokio::sync::Mutex;
+    static RENDERED_PAGES: OnceLock<Mutex<HashMap<(String, String), BlogArticleContent>>> =
+        OnceLock::new();
+
+    let mut pages = RENDERED_PAGES
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .await;
+
+    if let Some(content) = pages.get(&(filename.clone(), commit.clone())) {
+        Ok(content.clone())
+    } else {
+        match reqwest::get(format!("https://raw.githubusercontent.com/ming900518/articles/{commit}/{filename}")).await {
         Ok(resp) => {
             let resp_text = resp.text().await.unwrap_or_else(|_| "載入失敗\n請回上一頁".to_string());
             let collected_data = resp_text.lines().collect::<Vec<&str>>();
@@ -86,10 +106,12 @@ pub async fn fetch_article_content(
                         },
                     },
                 );
-            Ok(BlogArticleContent {
+            let new_content = BlogArticleContent {
                 title,
                 content
-            })
+            };
+            pages.insert((filename.clone(), commit.clone()), new_content.clone());
+            Ok(new_content)
         },
         Err(err) => {
             Ok(BlogArticleContent {
@@ -97,5 +119,6 @@ pub async fn fetch_article_content(
                 content: String::from("<p>請確認網址是否正確，網路環境是否暢通<br>如有疑問請<a href=\"mailto:mail@mingchang.tw\">與我聯繫</a></p><p>{}</p>"),
             })
         }
+    }
     }
 }

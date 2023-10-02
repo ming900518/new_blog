@@ -10,6 +10,12 @@ pub struct RawArticleData {
     pub date: OffsetDateTime,
     pub url: String,
     pub intro: Option<String>,
+    #[serde(default = "default_branch")]
+    pub commit: String,
+}
+
+fn default_branch() -> String {
+    "main".to_string()
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -18,6 +24,7 @@ pub struct ArticleData {
     pub date: String,
     pub url: String,
     pub intro: Option<String>,
+    pub commit: String,
 }
 
 const DATE_TIME_FORMAT: &[FormatItem<'_>] =
@@ -30,13 +37,15 @@ impl ArticleData {
             date: raw.date.format(&DATE_TIME_FORMAT).unwrap(),
             url: raw.url,
             intro: raw.intro,
+            commit: raw.commit,
         }
     }
 }
 
-#[derive(Params, PartialEq, Clone)]
+#[derive(Params, PartialEq, Clone, Debug)]
 pub struct BlogParams {
     pub filename: Option<String>,
+    pub commit: Option<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Default, Debug)]

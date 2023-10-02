@@ -21,7 +21,7 @@ pub fn Home() -> impl IntoView {
                                     .into_iter()
                                     .map(|article| view! {
                                         <div class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300">
-                                            <A href={format!("/blog/{}", article.url)}>
+                                            <A href={format!("/blog/?filename={}&commit={}", article.url, article.commit)}>
                                                 <div class="card-body">
                                                     <div class="flex lg:flex-row flex-col gap-2">
                                                         <h1 class="card-title justify-start grow">{&article.name}</h1>
