@@ -101,7 +101,7 @@ pub fn Drawer() -> impl IntoView {
                 }
             </Suspense>
             <input id="drawer" type="checkbox" class="drawer-toggle" />
-            <div class="drawer-side h-screen z-50">
+            <div class="drawer-side h-full z-50">
                 <label for="drawer" class="drawer-overlay" />
                 <ul class="menu p-4 pt-5 pb-5 w-60 h-full bg-base-300 text-base-content overflow-scroll flex-nowrap">
                     <p class="font-bold text-lg mb-3">"傳送門"</p>

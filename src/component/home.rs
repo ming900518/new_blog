@@ -13,7 +13,7 @@ pub fn Home() -> impl IntoView {
             {move || {
                 view! {
                     <Title text="Ming Chang"/>
-                    <div class="p-5">
+                    <div class="pt-5 pl-5 pr-5 min-h-[100dvh]">
                     {
                         match article_list_request.get().transpose() {
                             Ok(Some(articles)) => {
@@ -29,7 +29,7 @@ pub fn Home() -> impl IntoView {
                                                     </div>
                                                     <p class={
                                                         let article_intro = article.clone().intro;
-                                                        move || if article_intro.is_none() {"hidden"} else {""}
+                                                        article_intro.is_none().then_some("hidden")
                                                     }>{article.intro.unwrap_or_default()}</p>
                                                 </div>
                                             </A>
@@ -40,7 +40,7 @@ pub fn Home() -> impl IntoView {
                             Err(error) => {
                                 vec![
                                     view!{
-                                        <div class="card bg-base-100 shadow-xl mb-5 w-full rounded-lg select-none cursor-pointer hover:bg-base-300">
+                                        <div class="card bg-base-100 shadow-xl mb-5 rounded-lg select-none cursor-pointer hover:bg-base-300">
                                             <div class="card-body">
                                                 <div class="flex lg:flex-row flex-col gap-2">
                                                     <h1 class="card-title justify-start grow">"發生錯誤"</h1>

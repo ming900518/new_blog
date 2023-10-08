@@ -23,17 +23,18 @@ pub fn App() -> impl IntoView {
         <Meta name="apple-mobile-web-app-capable" content="yes"/>
         <Meta name="apple-touch-fullscreen" content="yes"/>
         <Stylesheet id="leptos" href="/pkg/new_blog.css" />
+        <Body class="min-h-[100dvh] w-[100dvw] bg-base-200" />
         <Router fallback=fallback>
-            <main class="bg-scroll bg-cover bg-center" style="background-image: url(/bg.webp)">
-                <div class="flex flex-col h-screen overflow-y-clip bg-gradient-to-b from-transparent to-base-300">
+            <main>
+                <div class="flex flex-col bg-base-100/60">
                     <Navbar />
-                    <div class="flex flex-row max-h-screen drawer">
+                    <div class="flex flex-row h-full w-full drawer">
                         <Drawer />
-                        <div class="drawer-content flex flex-col items-start justify-start overflow-scroll">
-                            <div id="content" class="pb-0 overflow-y-scroll overflow-x-clip w-full h-full">
+                        <div class="drawer-content flex flex-col items-start justify-start">
+                            <div id="content" class="overflow-y-scroll overflow-x-clip w-[100dvw] pt-[4rem]">
                                 <Routes>
                                     <Route
-                                        ssr=SsrMode::InOrder
+                                        ssr=SsrMode::Async
                                         path="/blog"
                                         view=Blog
                                     />

@@ -1,9 +1,47 @@
+use std::cmp::Ordering;
+use std::ops::{Div, Mul, Sub};
+
+use leptos::html::Header;
+use leptos::logging::log;
 use leptos::*;
 
 #[component]
 pub fn Navbar() -> impl IntoView {
+    let header_ref = create_node_ref::<Header>();
+
+    let last_y = RwSignal::new(0_f64);
+    let direction = RwSignal::new(Ordering::Equal);
+    let moved = RwSignal::new(0_f64);
+
+    let handle = window_event_listener(ev::scroll, move |_| {
+        let y = window().page_y_offset().unwrap_or_default();
+        let y_rem = 1.0_f64.div(16.0).mul(y);
+        let new_sub = y_rem.sub(last_y.get());
+        let orig_direction = direction.get();
+        let new_direction = new_sub.total_cmp(&0_f64);
+
+        if orig_direction == new_direction {
+            moved.update(|sub| *sub += new_sub.abs())
+        } else {
+            moved.set(new_sub);
+            direction.set(new_direction);
+        }
+
+        last_y.set(y_rem);
+
+        if y.gt(&0.0) {
+            moved.get().gt(&5.0).then(|| match direction.get() {
+                Ordering::Greater => header_ref.get().map(|header| header.style("top", "-4rem")),
+                Ordering::Less => header_ref.get().map(|header| header.style("top", "0")),
+                _ => None,
+            });
+        }
+    });
+
+    on_cleanup(move || handle.remove());
+
     view! {
-        <header class="navbar bg-base-200 supports-backdrop-blur:bg-base-200/95">
+        <header class="fixed top-0 z-50 navbar bg-base-200/80 backdrop-blur-xl w-[100dvw]" style="transition: top 0.2s ease-in-out" _ref=header_ref>
             <div class="flex-none">
                 <label for="drawer" class="btn btn-square btn-ghost">
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="23.0273" height="17.998">
@@ -14,7 +52,7 @@ pub fn Navbar() -> impl IntoView {
                     </svg>
                 </label>
             </div>
-            <p class="normal-case text-xl font-bold lg:ml-2 grow">"Ming Chang"</p>
+            <p class="normal-case text-xl font-bold ml-2 grow">"Ming Chang"</p>
             <div class="flex gap-2">
                 <a class="btn btn-ghost" href="https://twitter.com/mingchang137" target="_blank">
                     <svg class="h-4 w-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

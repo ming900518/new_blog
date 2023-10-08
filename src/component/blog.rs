@@ -20,14 +20,25 @@ pub fn Blog() -> impl IntoView {
         },
     );
 
+    fn fallback() -> View {
+        view!{
+            <div class="card shadow-xl md:m-5 lg:ml-20 lg:mr-20 object-fill rounded-none md:rounded-lg bg-base-100 min-h-[100dvh]">
+                <div class="card-body">
+                    <div class="article-content animate-pulse">
+                    </div>
+                </div>
+            </div>
+        }.into_view()
+    }
+
     view! {
-        <Transition fallback=move || view!(<span className="loading loading-spinner loading-lg"></span>)>
+        <Suspense fallback>
             {move ||
                 if let Some(Ok(article)) = article_content.get() {
                     view!{
                         <>
                             <Title text={format!("{} - Ming Chang", article.title)}/>
-                            <div class="card bg-base-100 shadow-xl md:m-5 md:mb-20 lg:ml-20 lg:mr-20 object-fill rounded-none md:rounded-lg">
+                            <div class="card shadow-xl md:m-5 lg:ml-20 lg:mr-20 object-fill rounded-none md:rounded-lg bg-base-100 min-h-[100dvh]">
                                 <div class="card-body">
                                     <div class="article-content">
                                         <article id="article-content" inner_html={article.content}/>
@@ -40,7 +51,7 @@ pub fn Blog() -> impl IntoView {
                     view!{}.into_view()
                 }
             }
-        </Transition>
+        </Suspense>
     }
 }
 
