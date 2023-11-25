@@ -1,80 +1,86 @@
-use comrak::plugins::syntect::SyntectAdapter;
-use comrak::{
-    markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
-    ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
-};
-use http::StatusCode;
-use leptos::{
-    server_fn::serde::{Deserialize, Serialize},
-    *,
-};
+use leptos::*;
 use leptos_meta::Title;
 use leptos_router::*;
 
-#[derive(Params, PartialEq, Clone)]
-struct BlogParams {
-    filename: Option<String>,
-}
+use crate::types::{BlogArticleContent, BlogParams};
 
 #[component]
 pub fn Blog() -> impl IntoView {
-    let param = use_params::<BlogParams>();
-    let article_content = create_blocking_resource(
-        move || param.get().unwrap().filename.unwrap(),
-        fetch_article_content,
+    let param = use_query::<BlogParams>();
+    let article_content = create_resource(
+        move || param.get().ok(),
+        move |data| {
+            data.map(|value| {
+                fetch_article_content(
+                    value.commit.unwrap_or_default(),
+                    value.filename.unwrap_or_default(),
+                )
+            })
+            .unwrap()
+        },
     );
 
+    fn fallback() -> View {
+        view!{
+            <div class="card shadow-xl md:m-5 lg:ml-20 lg:mr-20 object-fill rounded-none md:rounded-lg bg-base-100 min-h-[100dvh]">
+                <div class="card-body">
+                    <div class="article-content animate-pulse">
+                    </div>
+                </div>
+            </div>
+        }.into_view()
+    }
+
     view! {
-        <Suspense fallback=move || ()>
+        <Suspense fallback>
             {move ||
-                match article_content.get().transpose() {
-                    Ok(article) => {
-                        let article = article.unwrap_or_default();
-                        view!{
-                            <>
+                if let Some(Ok(article)) = article_content.get() {
+                    view!{
+                        <>
                             <Title text={format!("{} - Ming Chang", article.title)}/>
-                            <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
+                            <div class="card shadow-xl md:m-5 lg:ml-20 lg:mr-20 object-fill rounded-none md:rounded-lg bg-base-100 min-h-[100dvh]">
                                 <div class="card-body">
                                     <div class="article-content">
                                         <article id="article-content" inner_html={article.content}/>
                                     </div>
                                 </div>
                             </div>
-                            </>
-                        }
-                    }
-                    Err(error) =>
-                        view!{
-                            <>
-                                <div class="card bg-base-100 shadow-xl md:m-5 object-fill rounded-none md:rounded-lg">
-                                    <div class="card-body">
-                                        <div class="article-content">
-                                            <article id="article-content">
-                                                <h1>"發生錯誤"</h1>
-                                                <p>{format!("{error:?}")}</p>
-                                            </article>
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-                        }
-                    }
+                        </>
+                    }.into_view()
+                } else {
+                    view!{}.into_view()
                 }
+            }
         </Suspense>
     }
 }
 
-#[derive(Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct BlogArticleContent {
-    title: String,
-    content: String,
-}
-
-#[server(FetchArticleContent, "/api")]
+#[server]
 pub async fn fetch_article_content(
-    article_filename: String,
+    commit: String,
+    filename: String,
 ) -> Result<BlogArticleContent, ServerFnError> {
-    match reqwest::get(format!("https://raw.githubusercontent.com/ming900518/articles/main/{article_filename}")).await {
+    use comrak::plugins::syntect::SyntectAdapter;
+    use comrak::{
+        markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
+        ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
+    };
+    use http::StatusCode;
+    use std::collections::HashMap;
+    use std::sync::OnceLock;
+    use tokio::sync::Mutex;
+    static RENDERED_PAGES: OnceLock<Mutex<HashMap<(String, String), BlogArticleContent>>> =
+        OnceLock::new();
+
+    let mut pages = RENDERED_PAGES
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .await;
+
+    if let Some(content) = pages.get(&(filename.clone(), commit.clone())) {
+        Ok(content.clone())
+    } else {
+        match reqwest::get(format!("https://raw.githubusercontent.com/ming900518/articles/{commit}/{filename}")).await {
         Ok(resp) => {
             let resp_text = resp.text().await.unwrap_or_else(|_| "載入失敗\n請回上一頁".to_string());
             let collected_data = resp_text.lines().collect::<Vec<&str>>();
@@ -110,10 +116,12 @@ pub async fn fetch_article_content(
                         },
                     },
                 );
-            Ok(BlogArticleContent {
+            let new_content = BlogArticleContent {
                 title,
                 content
-            })
+            };
+            pages.insert((filename.clone(), commit.clone()), new_content.clone());
+            Ok(new_content)
         },
         Err(err) => {
             Ok(BlogArticleContent {
@@ -121,5 +129,6 @@ pub async fn fetch_article_content(
                 content: String::from("<p>請確認網址是否正確，網路環境是否暢通<br>如有疑問請<a href=\"mailto:mail@mingchang.tw\">與我聯繫</a></p><p>{}</p>"),
             })
         }
+    }
     }
 }

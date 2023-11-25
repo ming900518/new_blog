@@ -1,58 +1,115 @@
 use leptos::*;
+use leptos_meta::Html;
 use leptos_router::*;
-use wasm_bindgen::JsCast;
-use web_sys::{Element, HtmlInputElement, HtmlSelectElement};
+use wasm_bindgen::{prelude::Closure, JsCast};
+use web_sys::{HtmlInputElement, HtmlSelectElement, MediaQueryList};
 
 #[component]
-pub fn Drawer(
-    light_theme: RwSignal<String>,
-    dark_theme: RwSignal<String>,
-    current_theme: RwSignal<String>,
-    current_prefers_dark_scheme: RwSignal<bool>,
-    max_chisaki_mode: RwSignal<bool>,
-    max_chisaki_mode_css: RwSignal<Option<Element>>,
-    show_max_chisaki_checkbox: RwSignal<bool>,
-) -> impl IntoView {
-    let location = use_location();
-    let target = create_rw_signal(None);
+pub fn Drawer() -> impl IntoView {
+    let current_prefers_dark_scheme = RwSignal::new(false);
+    let current_theme = RwSignal::new(String::new());
+    let light_theme = RwSignal::new(String::new());
+    let dark_theme = RwSignal::new(String::new());
+    let max_chisaki_mode = RwSignal::new(false);
+    let max_chisaki_mode_css = RwSignal::new(None);
+    let show_max_chisaki_checkbox = RwSignal::new(false);
+    let target = RwSignal::new(None);
 
     create_effect(move |_| {
-        target.set(
-            window()
-                .document()
-                .unwrap()
-                .get_elements_by_tag_name("head")
-                .get_with_index(0),
-        );
+        let local_stroage = window().local_storage().ok().flatten().unwrap();
+        let chosen_light_theme = local_stroage.get_item("theme.light").ok().flatten();
+        let chosen_dark_theme = local_stroage.get_item("theme.dark").ok().flatten();
+
+        request_animation_frame(move || {
+            let prefers_color_scheme = window()
+                .match_media("(prefers-color-scheme:dark)")
+                .ok()
+                .flatten()
+                .unwrap();
+
+            max_chisaki_mode_css.set(
+                window()
+                    .document()
+                    .unwrap()
+                    .create_element("link")
+                    .map(|element| {
+                        element.set_attribute("rel", "stylesheet").ok();
+                        element.set_attribute("type", "text/css").ok();
+                        element.set_attribute("href", "/max-chisaki-mode.css").ok();
+                        element
+                    })
+                    .ok(),
+            );
+
+            light_theme.set(chosen_light_theme.unwrap_or_else(|| String::from("chisaki")));
+            dark_theme.set(chosen_dark_theme.unwrap_or_else(|| String::from("coffee")));
+
+            if prefers_color_scheme.matches() {
+                current_prefers_dark_scheme.set(true);
+                current_theme.set(dark_theme.get_untracked());
+            } else {
+                current_prefers_dark_scheme.set(false);
+                current_theme.set(light_theme.get_untracked());
+            }
+
+            let colorscheme_closure: Closure<dyn FnMut(_)> =
+                Closure::new(move |e: MediaQueryList| {
+                    if e.matches() {
+                        current_prefers_dark_scheme.set(true);
+                        current_theme.set(dark_theme.get_untracked());
+                    } else {
+                        current_prefers_dark_scheme.set(false);
+                        current_theme.set(light_theme.get_untracked());
+                    }
+                });
+
+            prefers_color_scheme.set_onchange(Some(colorscheme_closure.as_ref().unchecked_ref()));
+            colorscheme_closure.forget();
+
+            if let Ok(Some(value)) = local_stroage.get_item("max_chisaki_mode") {
+                show_max_chisaki_checkbox.set(true);
+                if value == "true" {
+                    max_chisaki_mode.set(true);
+                    if current_theme.get() == "chisaki" {
+                        window()
+                            .document()
+                            .unwrap()
+                            .get_elements_by_tag_name("head")
+                            .get_with_index(0)
+                            .unwrap()
+                            .append_child(&max_chisaki_mode_css.get().unwrap())
+                            .ok();
+                    }
+                }
+            }
+
+            target.set(
+                window()
+                    .document()
+                    .unwrap()
+                    .get_elements_by_tag_name("head")
+                    .get_with_index(0),
+            );
+        });
     });
 
     view! {
         <>
+            <Suspense fallback=move || view! { <Html lang="zh-Hant" /> }>
+                {
+                    move || view! { <Html lang="zh-Hant" attr:data-theme={ current_theme.get() } /> }.into_view()
+                }
+            </Suspense>
             <input id="drawer" type="checkbox" class="drawer-toggle" />
-            <div class={move || {
-                            if location.pathname.get() == "/" {
-                                "drawer-side h-screen lg:h-[calc(100vh-6.5rem)] lg:m-5 lg:rounded-lg z-50"
-                            } else {
-                                "drawer-side h-screen z-50"
-                            }
-                        }}
-            >
+            <div class="drawer-side h-full z-50">
                 <label for="drawer" class="drawer-overlay" />
-                <ul class={move || {
-                            if location.pathname.get() == "/" {
-                                "menu p-4 pt-5 pb-5 w-60 h-full bg-base-200 lg:bg-base-200/[.7] text-base-content overflow-scroll flex-nowrap"
-                            } else {
-                                "menu p-4 pt-5 pb-5 w-60 h-full bg-base-200 text-base-content overflow-scroll flex-nowrap"
-                            }
-                        }}
-            >
+                <ul class="menu p-4 pt-5 pb-5 w-60 h-full bg-base-300 text-base-content overflow-scroll flex-nowrap">
                     <p class="font-bold text-lg mb-3">"傳送門"</p>
-                    <li><a href="/">"文章列表"</a></li>
+                    <li><A href="/">"文章列表"</A></li>
                     <li><a href="https://mingchang.tw/">"關於我"</a></li>
                     <div class="divider"/>
                     <p class="font-bold text-lg mt-3 mb-3">"主題設定"</p>
                     <label class="label">"亮色"</label>
-                    <Suspense fallback=move || view! {}>
                         {view! {
                             <>
                             <select
@@ -113,9 +170,7 @@ pub fn Drawer(
                             </div>
                             </>
                         }.into_view()}
-                    </Suspense>
                     <label class="label">"暗色"</label>
-                    <Suspense fallback=move || view! {}>
                     {
                         move || view! {
                             <select
@@ -136,7 +191,6 @@ pub fn Drawer(
                             </select>
                         }.into_view()
                     }
-                    </Suspense>
                 </ul>
           </div>
       </>
