@@ -1,5 +1,3 @@
-use leptos::Params;
-use leptos_router::*;
 use serde::{Deserialize, Serialize};
 use time::{format_description::FormatItem, OffsetDateTime};
 
@@ -42,13 +40,13 @@ impl ArticleData {
     }
 }
 
-#[derive(Params, PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug, Deserialize)]
 pub struct BlogParams {
-    pub filename: Option<String>,
-    pub commit: Option<String>,
+    pub filename: String,
+    pub commit: String,
 }
 
-#[derive(Clone, PartialEq, Serialize, Deserialize, Default, Debug)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize, Default, Debug)]
 pub struct BlogArticleContent {
     pub title: String,
     pub content: String,

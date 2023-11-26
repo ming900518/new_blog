@@ -3,29 +3,11 @@ name = "new_blog"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 [dependencies]
-axum-server = { version = "*", features = ["tls-openssl"], optional = true}
-axum = { version = "*", optional = true }
-console_error_panic_hook = "*"
-console_log = "*"
-cfg-if = "*"
-leptos = { version = "*" }
-leptos_axum = { version = "*", optional = true }
-leptos_meta = { version = "*" }
-leptos_router = { version = "*" }
-log = "*"
-simple_logger = "*"
-tokio = { version = "*", optional = true }
-tower = { version = "*", optional = true }
-tower-http = { version = "*", features = ["fs"], optional = true }
-wasm-bindgen = "*"
-web-sys = { version = "*", features = ["Document", "Storage", "MediaQueryList"] }
-thiserror = "*"
-tracing = { version = "*", optional = true }
-http = "*"
+askama = "*"
+axum-server = { version = "*", features = ["tls-openssl"] }
+axum = { version = "*", features = ["headers"] }
+tokio = { version = "*", features = ["full"] }
 reqwest = { version = "*", default-features = false, features = [
     "json",
     "native-tls-vendored",
@@ -35,85 +17,24 @@ time = { version = "*", features = [
     "serde-well-known",
     "local-offset",
     "std",
+    "macros",
 ] }
 serde = { version = "*", features = ["derive"] }
 serde_json = { version = "*" }
 comrak = { version = "*" }
+tracing = { version = "*" }
+tracing-subscriber = { version = "*", features = ["env-filter"] }
+tower-http = { version = "*", features = ["trace"] }
+http = "1.0.0"
+axum-macros = "0.3.8"
 
-[features]
-hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
-ssr = [
-    "dep:axum",
-    "dep:axum-server",
-    "dep:tokio",
-    "dep:tower",
-    "dep:tower-http",
-    "dep:leptos_axum",
-    "leptos/ssr",
-    "leptos_meta/ssr",
-    "leptos_router/ssr",
-    "dep:tracing",
-]
+[lints.rust]
+unsafe_code = "forbid"
 
-[package.metadata.cargo-all-features]
-denylist = ["axum", "tokio", "tower", "tower-http", "leptos_axum"]
-skip_feature_sets = [["ssr", "hydrate"]]
-
-[package.metadata.leptos]
-# The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name
-output-name = "new_blog"
-
-# The site root folder is where cargo-leptos generate all output. WARNING: all content of this folder will be erased on a rebuild. Use it in your server setup.
-site-root = "target/site"
-
-style-file = "style/output.css"
-
-# The site-root relative folder where all compiled output (JS, WASM and CSS) is written
-# Defaults to pkg
-site-pkg-dir = "pkg"
-
-# Optional. Env: LEPTOS_ASSETS_DIR.
-assets-dir = "public"
-
-# The IP and port (ex: 127.0.0.1:3000) where the server serves the content. Use it in your server setup.
-site-addr = "127.0.0.1:3000"
-
-# The port to use for automatic reload monitoring
-reload-port = 3001
-
-#  The browserlist query used for optimizing the CSS.
-browserquery = "defaults"
-
-# Set by cargo-leptos watch when building with that tool. Controls whether autoreload JS will be included in the head
-watch = false
-
-# The environment Leptos will run in, usually either "DEV" or "PROD"
-env = "DEV"
-
-# The features to use when compiling the bin target
-#
-# Optional. Can be over-ridden with the command line parameter --bin-features
-bin-features = ["ssr"]
-
-# If the --no-default-features flag should be used when compiling the bin target
-#
-# Optional. Defaults to false.
-bin-default-features = false
-
-# The features to use when compiling the lib target
-#
-# Optional. Can be over-ridden with the command line parameter --lib-features
-lib-features = ["hydrate"]
-
-# If the --no-default-features flag should be used when compiling the lib target
-#
-# Optional. Defaults to false.
-lib-default-features = false
-
-lib-profile-release = "wasm-release"
-
-[profile.wasm-release]
-inherits = "release"
-opt-level = 'z'
-lto = true
-codegen-units = 1
+[lints.clippy]
+module_name_repetitions = "allow"
+similar_names = "allow"
+items_after_statements = "allow"
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
