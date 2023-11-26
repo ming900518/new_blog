@@ -158,13 +158,15 @@
             darkThemeSelector.value = darkTheme;
         }
 
-        const darkMode = window.matchMedia("(prefers-color-scheme:dark)").matches;
-        setTheme(darkMode ? darkTheme : lightTheme);
+        const darkMode = window.matchMedia("(prefers-color-scheme:dark)");
+
+        setTheme(darkMode.matches ? darkTheme : lightTheme);
+        darkMode.addListener(() => setTheme(darkMode.matches ? darkTheme : lightTheme));
 
         function changeLightTheme() {
             const newLightTheme = document.getElementById("lightThemeSelector").value;
             localStorage.setItem("theme.light", newLightTheme);
-            if (!darkMode) {
+            if (!darkMode.matches) {
                 setTheme(newLightTheme);
             }
         }
@@ -172,7 +174,7 @@
         function changeDarkTheme() {
             const newDarkTheme = document.getElementById("darkThemeSelector").value;
             localStorage.setItem("theme.dark", newDarkTheme);
-            if (darkMode) {
+            if (darkMode.matches) {
                 setTheme(newDarkTheme);
             }
         }
