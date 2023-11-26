@@ -8,17 +8,23 @@ use comrak::{
     markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
     ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
 };
+use mimalloc::MiMalloc;
 use pages::{Article, Index, List};
 use std::collections::HashMap;
 use std::sync::OnceLock;
 use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;
-use tracing::{info, Level};
-use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing::log::info;
+use tracing::Level;
+use tracing_subscriber::filter;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use types::{BlogArticleContent, BlogParams};
 
 mod pages;
 mod types;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 static RENDERED_PAGES: OnceLock<Mutex<HashMap<(String, String), BlogArticleContent>>> =
     OnceLock::new();
@@ -48,7 +54,7 @@ async fn main() {
         )
         .route("/article", get(show_article))
         .route("/style.css", get(get_style))
-        .with_state(TraceLayer::new_for_http())
+        .layer(TraceLayer::new_for_http())
         .into_make_service();
 
     if let Ok(ssl_config) = OpenSSLConfig::from_pem_file("ssl/ssl.pem", "ssl/ssl.key") {
