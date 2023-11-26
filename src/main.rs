@@ -17,16 +17,16 @@ use tracing::{info, Level};
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt};
 use types::{BlogArticleContent, BlogParams};
 
-static RENDERED_PAGES: OnceLock<Mutex<HashMap<(String, String), BlogArticleContent>>> =
-    OnceLock::new();
-
 mod pages;
 mod types;
+
+static RENDERED_PAGES: OnceLock<Mutex<HashMap<(String, String), BlogArticleContent>>> =
+    OnceLock::new();
 
 #[tokio::main]
 async fn main() {
     let tracing_filter = filter::Targets::new()
-        .with_target("tower_http::trace::on_response", Level::INFO)
+        .with_target("tower_http::trace::on_response", Level::DEBUG)
         .with_target("tower_http::trace::on_request", Level::DEBUG)
         .with_target("tower_http::trace::make_span", Level::DEBUG)
         .with_default(Level::INFO);
@@ -42,9 +42,12 @@ async fn main() {
             "/list",
             get(|| async { List::prepare_data().await.get_html() }),
         )
-        .route("/style.css", get(get_style))
-        .route("/blog", get(get_blog))
+        .route(
+            "/blog",
+            get(|query| async { Index::article(query).get_html() }),
+        )
         .route("/article", get(show_article))
+        .route("/style.css", get(get_style))
         .with_state(TraceLayer::new_for_http())
         .into_make_service();
 
@@ -72,10 +75,6 @@ async fn get_style() -> (HeaderMap, String) {
         HeaderValue::from_str("text/css").unwrap(),
     );
     (header, include_str!("../style/output.css").to_owned())
-}
-
-async fn get_blog(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Html<String> {
-    Index::article(filename, commit).get_html()
 }
 
 async fn show_article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Html<String> {

@@ -1,6 +1,6 @@
-use crate::types::{ArticleData, RawArticleData};
+use crate::types::{ArticleData, BlogParams, RawArticleData};
 use askama::Template;
-use axum::response::Html;
+use axum::{extract::Query, response::Html};
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -24,7 +24,7 @@ impl Index {
         }
     }
 
-    pub const fn article(filename: String, commit: String) -> Self {
+    pub fn article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Self {
         Self {
             route: PageRoute::Article { filename, commit },
         }
@@ -77,7 +77,7 @@ impl Article {
 
     pub fn error() -> Self {
         Self {
-            title: String::from("錯誤代碼"),
+            title: String::from("錯誤"),
             content: String::from("<p>請確認網址是否正確，網路環境是否暢通<br>如有疑問請<a href=\"mailto:mail@mingchang.tw\">與我聯繫</a></p><p>{}</p>")
         }
     }
