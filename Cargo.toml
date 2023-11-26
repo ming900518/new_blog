@@ -37,3 +37,10 @@ items_after_statements = "allow"
 all = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+panic = "abort"
+opt-level = 3
+strip = "symbols"
