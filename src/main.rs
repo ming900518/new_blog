@@ -79,15 +79,16 @@ async fn get_blog(Query(BlogParams { filename, commit }): Query<BlogParams>) -> 
 }
 
 async fn show_article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Html<String> {
-    if let Some(content) = RENDERED_PAGES
+    let rendered_pages = RENDERED_PAGES
         .get_or_init(|| Mutex::new(HashMap::new()))
         .lock()
-        .await
-        .get(&(filename.clone(), commit.clone()))
-    {
+        .await;
+    if let Some(content) = rendered_pages.get(&(filename.clone(), commit.clone())) {
         let content = content.clone();
+        drop(rendered_pages);
         Article::success(content.title, content.content).get_html()
     } else {
+        drop(rendered_pages);
         match reqwest::get(format!(
             "https://raw.githubusercontent.com/ming900518/articles/{commit}/{filename}"
         ))
@@ -146,6 +147,7 @@ async fn show_article(Query(BlogParams { filename, commit }): Query<BlogParams>)
                     .lock()
                     .await
                     .insert((filename.clone(), commit.clone()), new_content.clone());
+
                 Article::success(new_content.title, new_content.content).get_html()
             }
             Err(_err) => Article::error().get_html(),
