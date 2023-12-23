@@ -1,5 +1,61 @@
+use axum::response::Html;
 use serde::{Deserialize, Serialize};
 use time::{format_description::FormatItem, OffsetDateTime};
+use tokio::time::Instant;
+
+#[derive(Hash, PartialEq, Eq, Clone, Copy)]
+pub enum Theme {
+    Chisaki,
+    Light,
+    Retro,
+    Coffee,
+    Dark,
+    Dracula,
+}
+
+impl From<&str> for Theme {
+    fn from(value: &str) -> Self {
+        match value.to_lowercase().as_str() {
+            "light" => Self::Light,
+            "retro" => Self::Retro,
+            "coffee" => Self::Coffee,
+            "dark" => Self::Dark,
+            "dracula" => Self::Dracula,
+            _ => Self::Chisaki,
+        }
+    }
+}
+
+impl<'a> From<Theme> for &'a str {
+    fn from(val: Theme) -> Self {
+        match val {
+            Theme::Chisaki => "chisaki",
+            Theme::Light => "light",
+            Theme::Retro => "retro",
+            Theme::Coffee => "coffee",
+            Theme::Dark => "dark",
+            Theme::Dracula => "dracula",
+        }
+    }
+}
+
+pub struct RenderedIndex {
+    pub time: Instant,
+    pub content: Html<String>,
+}
+
+impl RenderedIndex {
+    pub fn new(content: Html<String>) -> Self {
+        RenderedIndex {
+            time: Instant::now(),
+            content,
+        }
+    }
+}
+
+pub struct RenderedArticle {
+    pub content: String,
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct RawArticleData {

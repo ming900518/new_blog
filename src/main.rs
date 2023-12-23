@@ -1,27 +1,33 @@
+use axum::http::header::SET_COOKIE;
 use axum::http::{HeaderMap, HeaderName, HeaderValue};
 use axum::{extract::Query, response::Html, routing::get, Router};
+use axum_extra::headers::{Cookie, Header, SetCookie};
+use axum_extra::TypedHeader;
 use comrak::plugins::syntect::SyntectAdapter;
 use comrak::{
     markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
     ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
 };
 use mimalloc::MiMalloc;
-use pages::{Article, Index, List};
+use pages::{Article, Index};
 use std::collections::HashMap;
 use std::sync::OnceLock;
+use std::time::Duration;
 use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;
 use tracing::log::info;
 use tracing::Level;
 use tracing_subscriber::filter;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use types::{BlogArticleContent, BlogParams};
+use types::{BlogArticleContent, BlogParams, RenderedIndex, Theme};
 
 mod pages;
 mod types;
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
+
+static TEMP_HOMEPAGE: OnceLock<Mutex<HashMap<Theme, RenderedIndex>>> = OnceLock::new();
 
 static RENDERED_PAGES: OnceLock<Mutex<HashMap<(String, String), BlogArticleContent>>> =
     OnceLock::new();
@@ -40,16 +46,8 @@ async fn main() {
         .init();
 
     let router = Router::new()
-        .route("/", get(|| async { Index::list().get_html() }))
-        .route(
-            "/list",
-            get(|| async { List::prepare_data().await.get_html() }),
-        )
-        .route(
-            "/blog",
-            get(|query| async { Index::article(query).get_html() }),
-        )
-        .route("/article", get(show_article))
+        .route("/", get(get_index))
+        .route("/blog", get(get_blog))
         .route("/style.css", get(get_style))
         .layer(TraceLayer::new_for_http())
         .into_make_service();
@@ -63,16 +61,53 @@ async fn main() {
         .expect("Server startup failed.");
 }
 
-async fn get_style() -> (HeaderMap, String) {
+async fn get_index(TypedHeader(cookie): TypedHeader<Cookie>) -> (HeaderMap, Html<String>) {
+    let dark_mode = cookie.get("dark_mode").is_some();
+    let requested_theme: Theme = cookie
+        .get("theme")
+        .unwrap_or(if dark_mode { "coffee" } else { "chisaki" })
+        .into();
     let mut header = HeaderMap::new();
-    header.insert(
-        HeaderName::from_lowercase(b"content-type").unwrap(),
-        HeaderValue::from_str("text/css").unwrap(),
-    );
-    (header, include_str!("../style/output.css").to_owned())
+    let theme_str: &str = requested_theme.into();
+    HeaderValue::from_str(&format!(
+        "theme={theme_str}; Expires=Thu, 21 Dec 2099 23:59:59 GMT; Secure; HttpOnly"
+    ))
+    .map(|value| header.insert(SET_COOKIE, value))
+    .ok();
+
+    if dark_mode {
+        HeaderValue::from_str("dark_mode; Expires=Thu, 21 Dec 2099 23:59:59 GMT; Secure; HttpOnly")
+            .map(|value| header.insert(SET_COOKIE, value))
+            .ok();
+    }
+
+    let mut temp_homepage = TEMP_HOMEPAGE
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .await;
+    if let Some(index) = temp_homepage.get(&requested_theme).and_then(|rendered| {
+        rendered
+            .time
+            .elapsed()
+            .lt(&Duration::from_secs(86_400))
+            .then_some(rendered.content.clone())
+    }) {
+        drop(temp_homepage);
+        (header, index)
+    } else {
+        let new_index = Index::list(requested_theme).await.get_html();
+        temp_homepage.insert(requested_theme, RenderedIndex::new(new_index.clone()));
+        drop(temp_homepage);
+        (header, new_index)
+    }
 }
 
-async fn show_article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Html<String> {
+async fn get_blog(
+    TypedHeader(cookie): TypedHeader<Cookie>,
+    Query(BlogParams { filename, commit }): Query<BlogParams>,
+) -> Html<String> {
+    let requested_theme: Theme = cookie.get("theme").unwrap_or("chisaki").into();
+
     let rendered_pages = RENDERED_PAGES
         .get_or_init(|| Mutex::new(HashMap::new()))
         .lock()
@@ -147,4 +182,13 @@ async fn show_article(Query(BlogParams { filename, commit }): Query<BlogParams>)
             Err(_err) => Article::error().get_html(),
         }
     }
+}
+
+async fn get_style() -> (HeaderMap, String) {
+    let mut header = HeaderMap::new();
+    header.insert(
+        HeaderName::from_lowercase(b"content-type").unwrap(),
+        HeaderValue::from_str("text/css").unwrap(),
+    );
+    (header, include_str!("../style/output.css").to_owned())
 }
