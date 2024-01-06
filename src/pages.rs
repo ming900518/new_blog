@@ -1,16 +1,15 @@
-use crate::types::{ArticleData, BlogParams, RawArticleData, Theme};
+use crate::types::{ArticleData, BlogParams, RawArticleData};
 use askama::Template;
 use axum::{extract::Query, response::Html};
 
 #[derive(Template)]
 #[template(path = "index.html")]
 pub struct Index {
-    theme: Theme,
     route: PageRoute,
 }
 
 pub enum PageRoute {
-    List { articles: Vec<ArticleData> },
+    List,
     Article { filename: String, commit: String },
 }
 
@@ -19,7 +18,31 @@ impl Index {
         self.render().unwrap_or_default().into()
     }
 
-    pub async fn list(theme: Theme) -> Self {
+    pub const fn list() -> Self {
+        Self {
+            route: PageRoute::List,
+        }
+    }
+
+    pub fn article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Self {
+        Self {
+            route: PageRoute::Article { filename, commit },
+        }
+    }
+}
+
+#[derive(Template)]
+#[template(path = "list.html")]
+pub struct List {
+    articles: Vec<ArticleData>,
+}
+
+impl List {
+    pub fn get_html(&self) -> Html<String> {
+        self.render().unwrap_or_default().into()
+    }
+
+    pub async fn prepare_data() -> Self {
         let resp =
             reqwest::get("https://raw.githubusercontent.com/ming900518/articles/main/article.json")
                 .await
@@ -27,22 +50,11 @@ impl Index {
         let mut fetched_data = resp.json::<Vec<RawArticleData>>().await.unwrap();
         fetched_data.sort_by_key(|x| x.date);
         fetched_data.reverse();
-
         Self {
-            theme,
-            route: PageRoute::List {
-                articles: fetched_data
-                    .into_iter()
-                    .map(ArticleData::from_raw)
-                    .collect::<Vec<ArticleData>>(),
-            },
-        }
-    }
-
-    pub fn article(theme: Theme, BlogParams { filename, commit }: BlogParams) -> Self {
-        Self {
-            theme,
-            route: PageRoute::Article { filename, commit },
+            articles: fetched_data
+                .into_iter()
+                .map(ArticleData::from_raw)
+                .collect::<Vec<ArticleData>>(),
         }
     }
 }

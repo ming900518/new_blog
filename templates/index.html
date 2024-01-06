@@ -103,10 +103,10 @@
                                 id="darkThemeSelector"
                                 class="select select-bordered select-ghost"
                                 onchange="changeDarkTheme()">
-                                <option disabled>選擇主題</option>
+                                <option disabled>"選擇主題"</option>
                                 <option value="coffee">Coffee（預設）</option>
                                 <option value="dark">Dark</option>
-                                <option value="dracula">Dracula</option>
+                                <option value="dracula">Retro</option>
                             </select>
                         </ul>
                     </div>
@@ -115,32 +115,17 @@
                             id="content"
                             class="overflow-y-scroll overflow-x-clip w-[100dvw] pt-[4rem]"
                             hx-boost="true">
-                            {% match route %} {% when PageRoute::List {articles} %}
-                            <div class="pt-5 pl-5 pr-5 min-h-[100dvh]">
-                                {% for article in articles %}
-                                <div
-                                    class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300">
-                                    <a href="/blog?filename={{article.url}}&commit={{article.commit}}">
-                                        <div class="card-body">
-                                            <div class="flex lg:flex-row flex-col gap-2">
-                                                <h1 class="card-title justify-start grow">{{article.name}}</h1>
-                                                <h2 class="text-sm justify-end">{{article.date}}</h2>
-                                            </div>
-                                            <p>
-                                                {% match article.intro %} {% when Some with(intro) %} {{intro}} {% when
-                                                None %} {% endmatch %}
-                                            </p>
-                                        </div>
-                                    </a>
-                                </div>
-                                {% endfor %}
-                            </div>
+                            {% match route %} {% when PageRoute::List %}
+                            <div
+                                class="pt-5 pl-5 pr-5 min-h-[100dvh]"
+                                hx-get="/list"
+                                hx-swap="transition:true"
+                                hx-trigger="load"></div>
                             {% when PageRoute::Article with {filename, commit} %}
                             <div
                                 hx-get="/article?filename={{filename}}&commit={{commit}}"
                                 hx-swap="transition:true"
-                                hx-trigger="load"
-                                hx-boost="true"></div>
+                                hx-trigger="load"></div>
                             {% endmatch %}
                         </div>
                     </div>
@@ -155,6 +140,49 @@
         crossorigin="anonymous"></script>
 
     <script>
+        let lightTheme = localStorage.getItem("theme.light");
+        let lightThemeSelector = document.getElementById("lightThemeSelector");
+        if (lightTheme === null || lightTheme === undefined || lightTheme === "") {
+            localStorage.setItem("theme.light", "chisaki");
+            lightTheme = "chisaki";
+        } else {
+            lightThemeSelector.value = lightTheme;
+        }
+
+        let darkTheme = localStorage.getItem("theme.dark");
+        let darkThemeSelector = document.getElementById("darkThemeSelector");
+        if (darkTheme === null || darkTheme === undefined || lightTheme === "") {
+            localStorage.setItem("theme.dark", "coffee");
+            darkTheme = "coffee";
+        } else {
+            darkThemeSelector.value = darkTheme;
+        }
+
+        const darkMode = window.matchMedia("(prefers-color-scheme:dark)");
+
+        setTheme(darkMode.matches ? darkTheme : lightTheme);
+        darkMode.addListener(() => setTheme(darkMode.matches ? darkTheme : lightTheme));
+
+        function changeLightTheme() {
+            const newLightTheme = document.getElementById("lightThemeSelector").value;
+            localStorage.setItem("theme.light", newLightTheme);
+            if (!darkMode.matches) {
+                setTheme(newLightTheme);
+            }
+        }
+
+        function changeDarkTheme() {
+            const newDarkTheme = document.getElementById("darkThemeSelector").value;
+            localStorage.setItem("theme.dark", newDarkTheme);
+            if (darkMode.matches) {
+                setTheme(newDarkTheme);
+            }
+        }
+
+        function setTheme(themeName) {
+            document.querySelector("html").setAttribute("data-theme", themeName);
+        }
+
         let lastY = 0;
         let moved = 0;
         let direction = "Equal";
