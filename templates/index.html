@@ -14,10 +14,10 @@
         <main>
             <div class="flex flex-col bg-base-100/60">
                 <header
-                    class="fixed top-0 z-50 navbar bg-base-200/80 backdrop-blur-xl w-[100dvw]"
+                    class="fixed top-0 z-50 navbar bg-base-200/80 backdrop-blur-xl w-[100dvw] shadow-md"
                     style="transition: top 0.2s ease-in-out">
                     <div class="flex-none">
-                        <label for="drawer" class="btn btn-square btn-ghost">
+                        <label for="drawer" class="btn btn-square btn-ghost" onclick="openDrawer()">
                             <svg
                                 version="1.1"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -79,10 +79,10 @@
                 </header>
                 <div class="flex flex-row h-full w-full drawer">
                     <input id="drawer" type="checkbox" class="drawer-toggle" />
-                    <div class="drawer-side h-full z-50">
-                        <label for="drawer" class="drawer-overlay"></label>
+                    <div class="drawer-side h-full z-40">
+                        <label for="drawer" class="drawer-overlay" onclick="closeDrawer()"></label>
                         <ul
-                            class="menu p-4 pt-5 pb-5 w-60 h-full bg-base-300 text-base-content overflow-scroll flex-nowrap">
+                            class="menu p-4 pt-20 pb-5 w-60 h-full bg-base-300 text-base-content overflow-scroll flex-nowrap">
                             <p class="font-bold text-lg mb-3">傳送門</p>
                             <li><a href="/">文章列表</a></li>
                             <li><a href="https://mingchang.tw/">關於我</a></li>
@@ -103,10 +103,10 @@
                                 id="darkThemeSelector"
                                 class="select select-bordered select-ghost"
                                 onchange="changeDarkTheme()">
-                                <option disabled>"選擇主題"</option>
+                                <option disabled>選擇主題</option>
                                 <option value="coffee">Coffee（預設）</option>
                                 <option value="dark">Dark</option>
-                                <option value="dracula">Retro</option>
+                                <option value="dracula">Dracula</option>
                             </select>
                         </ul>
                     </div>
@@ -116,11 +116,13 @@
                             <div class="pt-5 pl-5 pr-5 min-h-[100dvh]">
                                 {% for article in articles %}
                                 <div
-                                    class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300">
+                                    class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300 transition-colors">
                                     <a href="/blog?filename={{article.url}}&commit={{article.commit}}">
-                                        <div class="card-body">
+                                        <div class="card-body z-30">
                                             <div class="flex lg:flex-row flex-col gap-2">
-                                                <h1 class="card-title justify-start grow">{{article.name}}</h1>
+                                                <h1 class="card-title justify-start grow transition-colors">
+                                                    {{article.name}}
+                                                </h1>
                                                 <h2 class="text-sm justify-end">{{article.date}}</h2>
                                             </div>
                                             <p>
