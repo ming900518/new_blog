@@ -1,22 +1,28 @@
-use axum::http::{HeaderMap, HeaderName, HeaderValue};
-use axum::{extract::Query, response::Html, routing::get, Router};
+use axum::{
+    debug_handler,
+    extract::Query,
+    http::{HeaderMap, HeaderName, HeaderValue},
+    response::Html,
+    routing::get,
+    Router,
+};
 use axum_server::tls_openssl::OpenSSLConfig;
-use comrak::plugins::syntect::SyntectAdapter;
 use comrak::{
-    markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
-    ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
+    markdown_to_html_with_plugins, plugins::syntect::SyntectAdapter, ComrakExtensionOptions,
+    ComrakOptions, ComrakParseOptions, ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
 };
 use mimalloc::MiMalloc;
-use pages::{Article, Index, List};
-use std::collections::HashMap;
-use std::net::SocketAddr;
-use std::sync::OnceLock;
+use pages::{Article, Index};
+use std::{
+    collections::HashMap,
+    net::SocketAddr,
+    sync::OnceLock,
+    time::{Duration, Instant},
+};
 use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;
-use tracing::log::info;
-use tracing::Level;
-use tracing_subscriber::filter;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing::{log::info, Level};
+use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt};
 use types::{BlogArticleContent, BlogParams};
 
 mod pages;
@@ -25,16 +31,14 @@ mod types;
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
+static RENDERED_INDEX: OnceLock<Mutex<(Instant, Index)>> = OnceLock::new();
+
 static RENDERED_PAGES: OnceLock<Mutex<HashMap<(String, String), BlogArticleContent>>> =
     OnceLock::new();
 
 #[tokio::main]
 async fn main() {
-    let tracing_filter = filter::Targets::new()
-        .with_target("tower_http::trace::on_response", Level::DEBUG)
-        .with_target("tower_http::trace::on_request", Level::DEBUG)
-        .with_target("tower_http::trace::make_span", Level::DEBUG)
-        .with_default(Level::INFO);
+    let tracing_filter = filter::Targets::new().with_default(Level::INFO);
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
@@ -42,11 +46,7 @@ async fn main() {
         .init();
 
     let router = Router::new()
-        .route("/", get(|| async { Index::list().get_html() }))
-        .route(
-            "/list",
-            get(|| async { List::prepare_data().await.get_html() }),
-        )
+        .route("/", get(get_index))
         .route(
             "/blog",
             get(|query| async { Index::article(query).get_html() }),
@@ -74,6 +74,29 @@ async fn main() {
     }
 }
 
+#[debug_handler]
+async fn get_index() -> Html<String> {
+    async fn update_index() -> (Instant, Index) {
+        (Instant::now(), Index::list().await)
+    }
+
+    if let Some(mutex) = RENDERED_INDEX.get() {
+        let mut mutex = mutex.lock().await;
+        if mutex.0.elapsed() > Duration::from_secs(86400) {
+            let (new_instant, new_index) = update_index().await;
+            mutex.0 = new_instant;
+            mutex.1 = new_index;
+        }
+        mutex.1.get_html()
+    } else {
+        let (new_instant, new_index) = update_index().await;
+        let html = new_index.get_html();
+        RENDERED_INDEX.get_or_init(|| Mutex::new((new_instant, new_index)));
+        html
+    }
+}
+
+#[debug_handler]
 async fn get_style() -> (HeaderMap, String) {
     let mut header = HeaderMap::new();
     header.insert(
@@ -83,6 +106,7 @@ async fn get_style() -> (HeaderMap, String) {
     (header, include_str!("../style/output.css").to_owned())
 }
 
+#[debug_handler]
 async fn get_script() -> (HeaderMap, String) {
     let mut header = HeaderMap::new();
     header.insert(
@@ -92,7 +116,7 @@ async fn get_script() -> (HeaderMap, String) {
     (header, include_str!("../assets/script.js").to_owned())
 }
 
-
+#[debug_handler]
 async fn show_article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Html<String> {
     let rendered_pages = RENDERED_PAGES
         .get_or_init(|| Mutex::new(HashMap::new()))

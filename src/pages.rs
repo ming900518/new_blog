@@ -9,7 +9,7 @@ pub struct Index {
 }
 
 pub enum PageRoute {
-    List,
+    List { articles: Vec<ArticleData> },
     Article { filename: String, commit: String },
 }
 
@@ -18,31 +18,7 @@ impl Index {
         self.render().unwrap_or_default().into()
     }
 
-    pub const fn list() -> Self {
-        Self {
-            route: PageRoute::List,
-        }
-    }
-
-    pub fn article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Self {
-        Self {
-            route: PageRoute::Article { filename, commit },
-        }
-    }
-}
-
-#[derive(Template)]
-#[template(path = "list.html")]
-pub struct List {
-    articles: Vec<ArticleData>,
-}
-
-impl List {
-    pub fn get_html(&self) -> Html<String> {
-        self.render().unwrap_or_default().into()
-    }
-
-    pub async fn prepare_data() -> Self {
+    pub async fn list() -> Self {
         let resp =
             reqwest::get("https://raw.githubusercontent.com/ming900518/articles/main/article.json")
                 .await
@@ -51,10 +27,18 @@ impl List {
         fetched_data.sort_by_key(|x| x.date);
         fetched_data.reverse();
         Self {
-            articles: fetched_data
-                .into_iter()
-                .map(ArticleData::from_raw)
-                .collect::<Vec<ArticleData>>(),
+            route: PageRoute::List {
+                articles: fetched_data
+                    .into_iter()
+                    .map(ArticleData::from_raw)
+                    .collect::<Vec<ArticleData>>(),
+            },
+        }
+    }
+
+    pub fn article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Self {
+        Self {
+            route: PageRoute::Article { filename, commit },
         }
     }
 }
