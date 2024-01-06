@@ -53,6 +53,7 @@ async fn main() {
         )
         .route("/article", get(show_article))
         .route("/style.css", get(get_style))
+        .route("/script.js", get(get_script))
         .layer(TraceLayer::new_for_http())
         .into_make_service();
 
@@ -81,6 +82,16 @@ async fn get_style() -> (HeaderMap, String) {
     );
     (header, include_str!("../style/output.css").to_owned())
 }
+
+async fn get_script() -> (HeaderMap, String) {
+    let mut header = HeaderMap::new();
+    header.insert(
+        HeaderName::from_lowercase(b"content-type").unwrap(),
+        HeaderValue::from_str("application/javascript").unwrap(),
+    );
+    (header, include_str!("../assets/script.js").to_owned())
+}
+
 
 async fn show_article(Query(BlogParams { filename, commit }): Query<BlogParams>) -> Html<String> {
     let rendered_pages = RENDERED_PAGES
