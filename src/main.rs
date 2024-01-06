@@ -1,5 +1,6 @@
 use axum::http::{HeaderMap, HeaderName, HeaderValue};
 use axum::{extract::Query, response::Html, routing::get, Router};
+use axum_server::tls_openssl::OpenSSLConfig;
 use comrak::plugins::syntect::SyntectAdapter;
 use comrak::{
     markdown_to_html_with_plugins, ComrakExtensionOptions, ComrakOptions, ComrakParseOptions,
@@ -8,6 +9,7 @@ use comrak::{
 use mimalloc::MiMalloc;
 use pages::{Article, Index, List};
 use std::collections::HashMap;
+use std::net::SocketAddr;
 use std::sync::OnceLock;
 use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;
@@ -54,13 +56,21 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .into_make_service();
 
-    let addr = "0.0.0.0:3000";
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    info!("SSL disabled. Listening on {}", addr);
-
-    axum::serve(listener, router)
-        .await
-        .expect("Server startup failed.");
+    if let Ok(ssl_config) = OpenSSLConfig::from_pem_file("ssl/ssl.pem", "ssl/ssl.key") {
+        let addr = SocketAddr::from(([0, 0, 0, 0], 443));
+        info!("SSL enabled. Listening on {}", addr);
+        axum_server::bind_openssl(addr, ssl_config)
+            .serve(router)
+            .await
+            .expect("Server startup failed.");
+    } else {
+        let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+        info!("SSL disabled. Listening on {}", addr);
+        axum_server::bind(addr)
+            .serve(router)
+            .await
+            .expect("Server startup failed.");
+    }
 }
 
 async fn get_style() -> (HeaderMap, String) {
