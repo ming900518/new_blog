@@ -121,6 +121,7 @@
                                 <div
                                     class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300 transition-colors">
                                     <a
+                                        href="/blog?filename={{article.url}}&commit={{article.commit}}"
                                         hx-get="/article?filename={{article.url}}&commit={{article.commit}}"
                                         hx-swap="transition:true show:window:top"
                                         hx-target="#content"
