@@ -1,7 +1,11 @@
 <!doctype html>
 <html lang="zh-Hant-TW">
     <head>
+        {% match route %} {% when PageRoute::Article with {article} %}
+        <title>{{article.title}} - Ming Chang</title>
+        {% when _ %}
         <title>Ming Chang</title>
+        {% endmatch %}
         <meta charset="UTF-8" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-touch-fullscreen" content="yes" />
@@ -116,7 +120,11 @@
                                 {% for article in articles %}
                                 <div
                                     class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300 transition-colors">
-                                    <a href="/blog?filename={{article.url}}&commit={{article.commit}}">
+                                    <a
+                                        hx-get="/article?filename={{article.url}}&commit={{article.commit}}"
+                                        hx-swap="transition:true show:window:top"
+                                        hx-target="#content"
+                                        hx-push-url="/blog?filename={{article.url}}&commit={{article.commit}}">
                                         <div class="card-body z-30">
                                             <div class="flex lg:flex-row flex-col gap-2">
                                                 <h1 class="card-title justify-start grow transition-colors">
@@ -133,12 +141,7 @@
                                 </div>
                                 {% endfor %}
                             </div>
-                            {% when PageRoute::Article with {filename, commit} %}
-                            <div
-                                hx-get="/article?filename={{filename}}&commit={{commit}}"
-                                hx-swap="transition:true"
-                                hx-trigger="load"></div>
-                            {% endmatch %}
+                            {% when PageRoute::Article with {article} %} {{article|safe}} {% endmatch %}
                         </div>
                     </div>
                 </div>

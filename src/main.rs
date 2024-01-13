@@ -7,10 +7,6 @@ use axum::{
     Router,
 };
 use axum_server::tls_openssl::OpenSSLConfig;
-use comrak::{
-    markdown_to_html_with_plugins, plugins::syntect::SyntectAdapter, ComrakExtensionOptions,
-    ComrakOptions, ComrakParseOptions, ComrakPlugins, ComrakRenderOptions, ComrakRenderPlugins,
-};
 use mimalloc::MiMalloc;
 use pages::{Article, Index};
 use std::{
@@ -52,7 +48,7 @@ async fn main() {
         .route("/", get(get_index))
         .route(
             "/blog",
-            get(|query| async { Index::article(query).get_html() }),
+            get(|query| async { Index::article(query).await.get_html() }),
         )
         .route("/article", get(show_article))
         .route("/style.css", get(get_style))
@@ -146,68 +142,6 @@ async fn show_article(Query(BlogParams { filename, commit }): Query<BlogParams>)
         Article::success(content.title, content.content).get_html()
     } else {
         drop(rendered_pages);
-        match reqwest::get(format!(
-            "https://raw.githubusercontent.com/ming900518/articles/{commit}/{filename}"
-        ))
-        .await
-        {
-            Ok(resp) => {
-                let resp_text = resp
-                    .text()
-                    .await
-                    .unwrap_or_else(|_| "載入失敗\n請回上一頁".to_string());
-                let collected_data = resp_text.lines().collect::<Vec<&str>>();
-                let split_data = collected_data
-                    .split_first()
-                    .unwrap_or((&"載入失敗", &["請回上一頁"]));
-                let title = split_data.0[2..].to_string();
-
-                let adapter = SyntectAdapter::new(Some("base16-ocean.dark"));
-
-                let mut plugins = ComrakPlugins::default();
-                plugins.render = {
-                    let mut render_plugins = ComrakRenderPlugins::default();
-                    render_plugins.codefence_syntax_highlighter = Some(&adapter);
-                    render_plugins.heading_adapter = None;
-                    render_plugins
-                };
-
-                let content = markdown_to_html_with_plugins(
-                    collected_data.join("\n").trim(),
-                    &ComrakOptions {
-                        extension: {
-                            let mut options = ComrakExtensionOptions::default();
-                            options.strikethrough = true;
-                            options.table = true;
-                            options.tasklist = true;
-                            options.superscript = true;
-                            options
-                        },
-                        parse: {
-                            let mut options = ComrakParseOptions::default();
-                            options.smart = true;
-                            options
-                        },
-                        render: {
-                            let mut options = ComrakRenderOptions::default();
-                            options.github_pre_lang = true;
-                            options.unsafe_ = true;
-                            options
-                        },
-                    },
-                    &plugins,
-                );
-                let new_content = BlogArticleContent { title, content };
-
-                RENDERED_PAGES
-                    .get_or_init(|| Mutex::new(HashMap::new()))
-                    .lock()
-                    .await
-                    .insert((filename.clone(), commit.clone()), new_content.clone());
-
-                Article::success(new_content.title, new_content.content).get_html()
-            }
-            Err(_err) => Article::error().get_html(),
-        }
+        Article::from_filename_and_commit(filename, commit).await.get_html()
     }
 }
