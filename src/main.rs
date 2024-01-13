@@ -20,7 +20,10 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::sync::Mutex;
-use tower_http::trace::TraceLayer;
+use tower_http::{
+    compression::CompressionLayer,
+    trace::TraceLayer,
+};
 use tracing::{log::info, Level};
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt};
 use types::{BlogArticleContent, BlogParams};
@@ -54,6 +57,7 @@ async fn main() {
         .route("/article", get(show_article))
         .route("/style.css", get(get_style))
         .route("/script.js", get(get_script))
+        .layer(CompressionLayer::new().no_gzip())
         .layer(TraceLayer::new_for_http())
         .into_make_service();
 
@@ -107,7 +111,10 @@ async fn get_style() -> (HeaderMap, String) {
         HeaderName::from_lowercase(b"cache-control").unwrap(),
         HeaderValue::from_str("max-age=31536000").unwrap(),
     );
-    (header, include_str!("../style/output.css").to_owned())
+    (
+        header,
+        include_str!("../assets/styles/output.css").to_owned(),
+    )
 }
 
 #[debug_handler]
@@ -121,7 +128,10 @@ async fn get_script() -> (HeaderMap, String) {
         HeaderName::from_lowercase(b"cache-control").unwrap(),
         HeaderValue::from_str("max-age=31536000").unwrap(),
     );
-    (header, include_str!("../assets/script.js").to_owned())
+    (
+        header,
+        include_str!("../assets/scripts/script.js").to_owned(),
+    )
 }
 
 #[debug_handler]
