@@ -103,6 +103,10 @@ async fn get_style() -> (HeaderMap, String) {
         HeaderName::from_lowercase(b"content-type").unwrap(),
         HeaderValue::from_str("text/css").unwrap(),
     );
+    header.insert(
+        HeaderName::from_lowercase(b"cache-control").unwrap(),
+        HeaderValue::from_str("max-age=31536000").unwrap(),
+    );
     (header, include_str!("../style/output.css").to_owned())
 }
 
@@ -112,6 +116,10 @@ async fn get_script() -> (HeaderMap, String) {
     header.insert(
         HeaderName::from_lowercase(b"content-type").unwrap(),
         HeaderValue::from_str("application/javascript").unwrap(),
+    );
+    header.insert(
+        HeaderName::from_lowercase(b"cache-control").unwrap(),
+        HeaderValue::from_str("max-age=31536000").unwrap(),
     );
     (header, include_str!("../assets/script.js").to_owned())
 }
