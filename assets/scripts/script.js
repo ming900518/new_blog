@@ -10,8 +10,8 @@ if (lightTheme === null || lightTheme === undefined || lightTheme === "") {
 let darkTheme = localStorage.getItem("theme.dark");
 let darkThemeSelector = document.getElementById("darkThemeSelector");
 if (darkTheme === null || darkTheme === undefined || lightTheme === "") {
-    localStorage.setItem("theme.dark", "coffee");
-    darkTheme = "coffee";
+    localStorage.setItem("theme.dark", "dracula");
+    darkTheme = "dracula";
 } else {
     darkThemeSelector.value = darkTheme;
 }
@@ -45,10 +45,12 @@ function setTheme(themeName) {
 
 function openDrawer() {
     drawerOpened = !drawerOpened;
+    document.body.style.overflow = "hidden";
 }
 
 function closeDrawer() {
     drawerOpened = false;
+    document.body.style.overflow = "unset";
 }
 
 let lastY = 0;
