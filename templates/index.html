@@ -6,22 +6,6 @@
         {% when _ %}
         <title>Ming Chang's Blog</title>
         {% endmatch %}
-
-        <!-- Google Tag Manager -->
-        <script>
-            (function (w, d, s, l, i) {
-                w[l] = w[l] || [];
-                w[l].push({ "gtm.start": new Date().getTime(), "event": "gtm.js" });
-                var f = d.getElementsByTagName(s)[0],
-                    j = d.createElement(s),
-                    dl = l != "dataLayer" ? "&l=" + l : "";
-                j.async = true;
-                j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-                f.parentNode.insertBefore(j, f);
-            })(window, document, "script", "dataLayer", "GTM-KRVJ9JQL");
-        </script>
-        <!-- End Google Tag Manager -->
-
         <meta charset="UTF-8" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-touch-fullscreen" content="yes" />
@@ -29,19 +13,18 @@
         <meta name="description" content="這是 Ming Chang 的部落格，介紹有關我自己的事物，歡迎蒞臨！" />
         <link href="https://mingchang.tw/assets/favicon.ico" rel="icon" />
         <link href="/style.css" rel="stylesheet" type="text/css" />
+
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "Ming Chang",
+                "url": "https://blog.mingchang.tw"
+            }
+        </script>
     </head>
 
     <body class="min-h-[100dvh] w-[100dvw] bg-base-200 touch-none">
-        <!-- Google Tag Manager (noscript) -->
-        <noscript
-            ><iframe
-                src="https://www.googletagmanager.com/ns.html?id=GTM-KRVJ9JQL"
-                height="0"
-                width="0"
-                style="display: none; visibility: hidden"></iframe
-        ></noscript>
-        <!-- End Google Tag Manager (noscript) -->
-
         <main>
             <div class="flex flex-col bg-base-100/60 select-none">
                 <header
