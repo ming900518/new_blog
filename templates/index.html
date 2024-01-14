@@ -2,9 +2,9 @@
 <html lang="zh-Hant-TW">
     <head>
         {% match route %} {% when PageRoute::Article with {article} %}
-        <title>{{article.title}} - Ming Chang</title>
+        <title>{{article.title}} - Ming Chang's Blog</title>
         {% when _ %}
-        <title>Ming Chang</title>
+        <title>Ming Chang's Blog</title>
         {% endmatch %}
         <meta charset="UTF-8" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -21,7 +21,7 @@
                     class="fixed top-0 z-50 navbar bg-base-200/80 backdrop-blur-xl w-[100dvw] shadow-md"
                     style="transition: top 0.2s ease-in-out">
                     <div class="flex-none">
-                        <label for="drawer" class="btn btn-square btn-ghost" onclick="openDrawer()">
+                        <label for="drawer" class="btn btn-square btn-ghost" onclick="toggleDrawer()">
                             <svg
                                 version="1.1"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -38,7 +38,7 @@
                             </svg>
                         </label>
                     </div>
-                    <p class="normal-case text-xl font-bold ml-2 grow">Ming Chang</p>
+                    <p class="normal-case text-xl font-bold ml-2 grow">Ming Chang's Blog</p>
                     <div class="flex gap-2">
                         <a class="btn btn-ghost" href="https://twitter.com/mingchang137" target="_blank">
                             <svg
@@ -83,11 +83,21 @@
                 <div class="flex flex-row h-full w-full drawer">
                     <input id="drawer" type="checkbox" class="drawer-toggle" />
                     <div class="drawer-side h-full z-40">
-                        <label for="drawer" class="drawer-overlay" onclick="closeDrawer()"></label>
+                        <label for="drawer" class="drawer-overlay" onclick="toggleDrawer()"></label>
                         <ul
                             class="menu p-4 pt-20 pb-5 w-60 h-full bg-base-300 text-base-content overflow-scroll flex-nowrap">
                             <p class="font-bold text-lg mb-3">傳送門</p>
-                            <li><a href="/">文章列表</a></li>
+                            <li>
+                                <a
+                                    href="/"
+                                    hx-get="/list"
+                                    hx-swap="transition:true show:window:top"
+                                    hx-target="#content"
+                                    hx-push-url="/"
+                                    hx-on::before-request="toggleDrawer();document.getElementById('drawer').checked = false"
+                                    >文章列表</a
+                                >
+                            </li>
                             <li><a href="https://mingchang.tw/">關於我</a></li>
                             <div class="divider"></div>
                             <p class="font-bold text-lg mt-3 mb-3">主題設定</p>
@@ -115,34 +125,8 @@
                     </div>
                     <div class="drawer-content flex flex-col items-start justify-start">
                         <div id="content" class="overflow-y-scroll overflow-x-clip w-[100dvw] pt-[4rem]">
-                            {% match route %} {% when PageRoute::List with {articles} %}
-                            <div class="pt-5 pl-5 pr-5 min-h-[100dvh]">
-                                {% for article in articles %}
-                                <div
-                                    class="card bg-base-100 shadow-xl mb-5 lg:ml-20 lg:mr-20 rounded-lg select-none cursor-pointer hover:bg-base-300 transition-colors">
-                                    <a
-                                        href="/blog?filename={{article.url}}&commit={{article.commit}}"
-                                        hx-get="/article?filename={{article.url}}&commit={{article.commit}}"
-                                        hx-swap="transition:true show:window:top"
-                                        hx-target="#content"
-                                        hx-push-url="/blog?filename={{article.url}}&commit={{article.commit}}">
-                                        <div class="card-body z-30">
-                                            <div class="flex lg:flex-row flex-col gap-2">
-                                                <h1 class="card-title justify-start grow transition-colors">
-                                                    {{article.name}}
-                                                </h1>
-                                                <h2 class="text-sm justify-end">{{article.date}}</h2>
-                                            </div>
-                                            <p>
-                                                {% match article.intro %} {% when Some with(intro) %} {{intro}} {% when
-                                                None %} {% endmatch %}
-                                            </p>
-                                        </div>
-                                    </a>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% when PageRoute::Article with {article} %} {{article|safe}} {% endmatch %}
+                            {% match route %} {% when PageRoute::List with {list} %} {{list|safe}} {% when
+                            PageRoute::Article with {article} %} {{article|safe}} {% endmatch %}
                         </div>
                     </div>
                 </div>

@@ -1,3 +1,4 @@
+//***** Theme Control *****
 let lightTheme = localStorage.getItem("theme.light");
 let lightThemeSelector = document.getElementById("lightThemeSelector");
 if (lightTheme === null || lightTheme === undefined || lightTheme === "") {
@@ -21,8 +22,6 @@ const darkMode = window.matchMedia("(prefers-color-scheme:dark)");
 setTheme(darkMode.matches ? darkTheme : lightTheme);
 darkMode.addEventListener("change", (event) => setTheme(event.matches ? darkTheme : lightTheme));
 
-let drawerOpened = false;
-
 function changeLightTheme() {
     const newLightTheme = document.getElementById("lightThemeSelector").value;
     localStorage.setItem("theme.light", newLightTheme);
@@ -43,15 +42,17 @@ function setTheme(themeName) {
     document.querySelector("html").setAttribute("data-theme", themeName);
 }
 
-function openDrawer() {
-    drawerOpened = !drawerOpened;
-    document.body.style.overflow = "hidden";
+//***** Drawer Control *****
+
+function toggleDrawer() {
+    if (document.getElementById("drawer").checked) {
+        document.body.style.overflow = "unset";
+    } else {
+        document.body.style.overflow = "hidden";
+    }
 }
 
-function closeDrawer() {
-    drawerOpened = false;
-    document.body.style.overflow = "unset";
-}
+//***** Header Bar Animation Control *****
 
 let lastY = 0;
 let moved = 0;
@@ -81,7 +82,7 @@ window.addEventListener("scroll", () => {
 
     lastY = yRem;
 
-    if (y > 0.0 && moved > 5.0 && !drawerOpened) {
+    if (y > 0.0 && moved > 5.0 && !document.getElementById("drawer").checked) {
         switch (direction) {
             case "Greater": {
                 document.querySelector("header").style.top = "-4rem";
