@@ -43,7 +43,7 @@ impl ArticleData {
 #[derive(PartialEq, Eq, Clone, Debug, Deserialize)]
 pub struct BlogParams {
     pub filename: String,
-    pub commit: String,
+    pub commit: Option<String>,
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize, Default, Debug)]

@@ -7,17 +7,15 @@ use axum::{
 use axum_server::tls_openssl::OpenSSLConfig;
 use mimalloc::MiMalloc;
 use pages::{Article, Index, List};
-use std::{
-    collections::HashMap,
-    net::SocketAddr,
-    sync::OnceLock,
-    time::Instant,
-};
+use std::{collections::HashMap, net::SocketAddr, sync::OnceLock, time::Instant};
 use tokio::sync::Mutex;
 use tower_http::{compression::CompressionLayer, trace::TraceLayer};
 use tracing::{log::info, Level};
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt};
 use types::BlogArticleContent;
+
+#[cfg(debug_assertions)]
+use axum::{extract::Multipart, http::StatusCode, routing::post};
 
 mod pages;
 mod types;
@@ -50,7 +48,12 @@ async fn main() {
         )
         .route("/list", get(|| async { List::generate().await.get_html() }))
         .route("/style.css", get(get_style))
-        .route("/script.js", get(get_script))
+        .route("/script.js", get(get_script));
+
+    #[cfg(debug_assertions)]
+    let router = router.route("/manually_render", post(manually_render));
+
+    let router = router
         .layer(CompressionLayer::new().no_gzip())
         .layer(TraceLayer::new_for_http())
         .into_make_service();
@@ -104,4 +107,16 @@ async fn get_script() -> (HeaderMap, String) {
         header,
         include_str!("../assets/scripts/script.js").to_owned(),
     )
+}
+
+#[debug_handler]
+#[cfg(debug_assertions)]
+async fn manually_render(mut multipart: Multipart) -> StatusCode {
+    if let Some(field) = multipart.next_field().await.ok().flatten() {
+        let data = field.text().await.unwrap_or_default();
+        let _ = Article::from_file(data).await;
+        StatusCode::OK
+    } else {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
 }
