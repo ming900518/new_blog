@@ -48,8 +48,7 @@ async fn main() {
         )
         .route("/list", get(|| async { List::generate().await.get_html() }))
         .route("/style.css", get(get_style))
-        .route("/script.js", get(get_script))
-        .route("/list-item.component.js", get(get_list_item_wc));
+        .route("/script.js", get(get_script));
 
     #[cfg(debug_assertions)]
     let router = router.route("/manually_render", post(manually_render));
@@ -107,23 +106,6 @@ async fn get_script() -> (HeaderMap, String) {
     (
         header,
         include_str!("../assets/scripts/script.js").to_owned(),
-    )
-}
-
-#[debug_handler]
-async fn get_list_item_wc() -> (HeaderMap, String) {
-    let mut header = HeaderMap::new();
-    header.insert(
-        HeaderName::from_lowercase(b"content-type").unwrap(),
-        HeaderValue::from_str("application/javascript").unwrap(),
-    );
-    header.insert(
-        HeaderName::from_lowercase(b"cache-control").unwrap(),
-        HeaderValue::from_str("max-age=31536000").unwrap(),
-    );
-    (
-        header,
-        include_str!("../assets/scripts/list-item.component.js").to_owned(),
     )
 }
 
