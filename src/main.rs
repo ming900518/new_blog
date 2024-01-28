@@ -48,6 +48,7 @@ async fn main() {
         )
         .route("/list", get(|| async { List::generate().await.get_html() }))
         .route("/style.css", get(get_style))
+        .route("/htmx.min.js", get(get_htmx))
         .route("/script.js", get(get_script));
 
     #[cfg(debug_assertions)]
@@ -106,6 +107,23 @@ async fn get_script() -> (HeaderMap, String) {
     (
         header,
         include_str!("../assets/scripts/script.js").to_owned(),
+    )
+}
+
+#[debug_handler]
+async fn get_htmx() -> (HeaderMap, String) {
+    let mut header = HeaderMap::new();
+    header.insert(
+        HeaderName::from_lowercase(b"content-type").unwrap(),
+        HeaderValue::from_str("application/javascript").unwrap(),
+    );
+    header.insert(
+        HeaderName::from_lowercase(b"cache-control").unwrap(),
+        HeaderValue::from_str("max-age=31536000").unwrap(),
+    );
+    (
+        header,
+        include_str!("../assets/scripts/htmx.min.js").to_owned(),
     )
 }
 
