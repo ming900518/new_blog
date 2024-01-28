@@ -1,5 +1,6 @@
 if (!jsLoaded) {
     var jsLoaded = true;
+    var darkMode = window.matchMedia("(prefers-color-scheme:dark)");
 
     //***** Theme Control *****
     let lightTheme = localStorage.getItem("theme.light");
@@ -19,8 +20,6 @@ if (!jsLoaded) {
     } else {
         darkThemeSelector.value = darkTheme;
     }
-
-    const darkMode = window.matchMedia("(prefers-color-scheme:dark)");
 
     setTheme(darkMode.matches ? darkTheme : lightTheme);
     darkMode.addEventListener("change", (event) => setTheme(event.matches ? darkTheme : lightTheme));
@@ -96,6 +95,8 @@ if (!jsLoaded) {
                     break;
                 }
             }
+        } else if (y <= 0.0 && !document.getElementById("drawer").checked) {
+            document.querySelector("header").style.top = "";
         }
     });
 }
