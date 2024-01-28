@@ -159,6 +159,7 @@
         Liberation Mono,
         monospace;
     background-color: #e8e8e8;
+    color: black;
     white-space: break-spaces;
     border-radius: 6px;
 }
