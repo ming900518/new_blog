@@ -66,7 +66,7 @@
                                     hx-swap="transition:true show:window:top"
                                     hx-target="#content"
                                     hx-push-url="/"
-                                    hx-on::before-request="toggleDrawer();document.getElementById('drawer').checked = false">
+                                    hx-on::before-request="toggleDrawer();document.getElementById('drawer').checked = false;">
                                     <div class="w-5 aspect-square flex flex-col justify-center items-center">
                                         <svg
                                             version="1.1"
@@ -226,7 +226,7 @@
                         </ul>
                     </div>
                     <div class="drawer-content flex flex-col items-start justify-start">
-                        <div id="content" class="overflow-y-scroll overflow-x-clip w-[100dvw] pt-[4rem]">
+                        <div id="content" class="slide-it overflow-y-scroll overflow-x-clip w-[100dvw] pt-[4rem]">
                             {% match route %} {% when PageRoute::List with {list} %} {{list|safe}} {% when
                             PageRoute::Article with {article} %} {{article|safe}} {% endmatch %}
                         </div>
